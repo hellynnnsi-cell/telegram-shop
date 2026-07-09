@@ -180,7 +180,7 @@
         </div>
         <div id="contentArea"></div>
     </div>
-    <button class="sync-btn" onclick="syncProducts()" title="Синхронизировать">🔄</button>
+    <button class="sync-btn" onclick="syncProducts()">🔄</button>
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
         <div class="modal" id="modalBox"></div>
@@ -202,39 +202,19 @@
 
         const defaultMetro = [
             {line:'Кировско-Выборгская',color:'#D32F2F',stations:[
-                {name:'Девяткино',av:true},{name:'Гражданский проспект',av:true},{name:'Академическая',av:true},
-                {name:'Политехническая',av:true},{name:'Площадь Мужества',av:true},{name:'Лесная',av:true},
-                {name:'Выборгская',av:true},{name:'Площадь Ленина',av:true},{name:'Чернышевская',av:true},
-                {name:'Площадь Восстания',av:true},{name:'Владимирская',av:true},{name:'Пушкинская',av:true},
-                {name:'Технологический институт',av:true},{name:'Балтийская',av:true},{name:'Нарвская',av:true},
-                {name:'Кировский завод',av:true},{name:'Автово',av:true},{name:'Ленинский проспект',av:true},
-                {name:'Проспект Ветеранов',av:true}
+                {name:'Девяткино',av:true},{name:'Гражданский проспект',av:true},{name:'Академическая',av:true},{name:'Политехническая',av:true},{name:'Площадь Мужества',av:true},{name:'Лесная',av:true},{name:'Выборгская',av:true},{name:'Площадь Ленина',av:true},{name:'Чернышевская',av:true},{name:'Площадь Восстания',av:true},{name:'Владимирская',av:true},{name:'Пушкинская',av:true},{name:'Технологический институт',av:true},{name:'Балтийская',av:true},{name:'Нарвская',av:true},{name:'Кировский завод',av:true},{name:'Автово',av:true},{name:'Ленинский проспект',av:true},{name:'Проспект Ветеранов',av:true}
             ]},
             {line:'Московско-Петроградская',color:'#1976D2',stations:[
-                {name:'Парнас',av:true},{name:'Проспект Просвещения',av:true},{name:'Озерки',av:true},
-                {name:'Удельная',av:true},{name:'Пионерская',av:true},{name:'Чёрная речка',av:true},
-                {name:'Петроградская',av:true},{name:'Горьковская',av:true},{name:'Невский проспект',av:true},
-                {name:'Сенная площадь',av:true},{name:'Технологический институт',av:true},{name:'Фрунзенская',av:true},
-                {name:'Московские ворота',av:true},{name:'Электросила',av:true},{name:'Парк Победы',av:true},
-                {name:'Московская',av:true},{name:'Звёздная',av:true},{name:'Купчино',av:true}
+                {name:'Парнас',av:true},{name:'Проспект Просвещения',av:true},{name:'Озерки',av:true},{name:'Удельная',av:true},{name:'Пионерская',av:true},{name:'Чёрная речка',av:true},{name:'Петроградская',av:true},{name:'Горьковская',av:true},{name:'Невский проспект',av:true},{name:'Сенная площадь',av:true},{name:'Технологический институт',av:true},{name:'Фрунзенская',av:true},{name:'Московские ворота',av:true},{name:'Электросила',av:true},{name:'Парк Победы',av:true},{name:'Московская',av:true},{name:'Звёздная',av:true},{name:'Купчино',av:true}
             ]},
             {line:'Невско-Василеостровская',color:'#388E3C',stations:[
-                {name:'Беговая',av:true},{name:'Зенит',av:true},{name:'Приморская',av:true},
-                {name:'Василеостровская',av:true},{name:'Гостиный двор',av:true},{name:'Маяковская',av:true},
-                {name:'Пл. Александра Невского',av:true},{name:'Елизаровская',av:true},{name:'Ломоносовская',av:true},
-                {name:'Пролетарская',av:true},{name:'Обухово',av:true},{name:'Рыбацкое',av:true}
+                {name:'Беговая',av:true},{name:'Зенит',av:true},{name:'Приморская',av:true},{name:'Василеостровская',av:true},{name:'Гостиный двор',av:true},{name:'Маяковская',av:true},{name:'Пл. Александра Невского',av:true},{name:'Елизаровская',av:true},{name:'Ломоносовская',av:true},{name:'Пролетарская',av:true},{name:'Обухово',av:true},{name:'Рыбацкое',av:true}
             ]},
             {line:'Правобережная',color:'#F57C00',stations:[
-                {name:'Спасская',av:true},{name:'Достоевская',av:true},{name:'Лиговский проспект',av:true},
-                {name:'Пл. Александра Невского',av:true},{name:'Новочеркасская',av:true},{name:'Ладожская',av:true},
-                {name:'Пр. Большевиков',av:true},{name:'Улица Дыбенко',av:true}
+                {name:'Спасская',av:true},{name:'Достоевская',av:true},{name:'Лиговский проспект',av:true},{name:'Пл. Александра Невского',av:true},{name:'Новочеркасская',av:true},{name:'Ладожская',av:true},{name:'Пр. Большевиков',av:true},{name:'Улица Дыбенко',av:true}
             ]},
             {line:'Фрунзенско-Приморская',color:'#7B1FA2',stations:[
-                {name:'Комендантский проспект',av:true},{name:'Старая Деревня',av:true},{name:'Крестовский остров',av:true},
-                {name:'Чкаловская',av:true},{name:'Спортивная',av:true},{name:'Адмиралтейская',av:true},
-                {name:'Садовая',av:true},{name:'Звенигородская',av:true},{name:'Обводный канал',av:true},
-                {name:'Волковская',av:true},{name:'Бухарестская',av:true},{name:'Международная',av:true},
-                {name:'Проспект Славы',av:true},{name:'Дунайская',av:true},{name:'Шушары',av:true}
+                {name:'Комендантский проспект',av:true},{name:'Старая Деревня',av:true},{name:'Крестовский остров',av:true},{name:'Чкаловская',av:true},{name:'Спортивная',av:true},{name:'Адмиралтейская',av:true},{name:'Садовая',av:true},{name:'Звенигородская',av:true},{name:'Обводный канал',av:true},{name:'Волковская',av:true},{name:'Бухарестская',av:true},{name:'Международная',av:true},{name:'Проспект Славы',av:true},{name:'Дунайская',av:true},{name:'Шушары',av:true}
             ]}
         ];
 
@@ -257,18 +237,14 @@
                     timeSlots = d.timeSlots || timeSlots;
                 } else {
                     categories = [
-                        {id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true},
-                        {id:3,name:'Наушники',av:true},{id:4,name:'Игры',av:true},
-                        {id:5,name:'Планшеты',av:true},{id:6,name:'Часы',av:true},{id:7,name:'Техника',av:true}
+                        {id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true},{id:3,name:'Наушники',av:true},
+                        {id:4,name:'Игры',av:true},{id:5,name:'Планшеты',av:true},{id:6,name:'Часы',av:true},{id:7,name:'Техника',av:true}
                     ];
                     metroData = JSON.parse(JSON.stringify(defaultMetro));
                 }
                 const sp = sessionStorage.getItem('hg_products');
                 if (sp) products = JSON.parse(sp);
-            } catch(e) {
-                categories = [{id:1,name:'Телефоны',av:true}];
-                metroData = JSON.parse(JSON.stringify(defaultMetro));
-            }
+            } catch(e) {}
         }
 
         function saveData() {
@@ -280,10 +256,10 @@
 
         function syncProducts() {
             tg.sendData(JSON.stringify({action:'get_products'}));
-            showToast('Запрос товаров...');
+            showToast('Синхронизация...');
         }
 
-        setTimeout(syncProducts, 300);
+        setTimeout(syncProducts, 500);
 
         function checkAdmin() { if (isAdmin) document.getElementById('adminBtn').style.display = 'flex'; }
         function switchView(view) { currentView = view; renderContent(); }
@@ -292,7 +268,6 @@
             document.getElementById('toastContainer').appendChild(t);
             setTimeout(() => t.remove(), 1800);
         }
-
         function updateBadge() { document.getElementById('cartBadge').textContent = cart.reduce((s,i)=>s+i.qty,0); }
 
         function renderContent() {
@@ -324,7 +299,7 @@
             }
 
             if (!list.length) {
-                html += `<div class="empty-state" style="grid-column:1/-1;text-align:center;"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncProducts()">🔄 Синхронизировать</button></div>`;
+                html += `<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncProducts()">🔄 Синхронизировать</button></div>`;
             } else {
                 list.forEach(p => {
                     const inCart = cart.find(c => c.id === p.id);
@@ -371,7 +346,7 @@
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             let html = '<h3 style="margin-bottom:10px;">🛒 Корзина</h3>';
             if (!cart.length) {
-                html += '<div class="empty-state" style="grid-column:1/-1;text-align:center;"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
+                html += '<div class="empty-state"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
             } else {
                 html += cart.map(i => `
                     <div class="cart-item">
