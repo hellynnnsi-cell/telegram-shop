@@ -52,12 +52,17 @@
             display:flex; align-items:center; justify-content:center; padding:0 4px;
         }
         .search-wrap { display:flex; gap:8px; margin-bottom:12px; }
-        .search-input {
+        .search-input, .admin-input {
             flex:1; padding:12px 14px; border-radius:14px; background:var(--card);
             border:2px solid var(--border); color:var(--text); font-size:14px; outline:none; transition:all 0.3s;
         }
-        .search-input:focus { border-color:var(--accent); }
-        .search-input::placeholder { color:#52525b; }
+        .admin-input { margin-bottom:6px; }
+        .search-input:focus, .admin-input:focus { border-color:var(--accent); }
+        .search-input::placeholder, .admin-input::placeholder { color:#52525b; }
+        .admin-select {
+            width:100%; padding:12px 14px; border-radius:14px; background:var(--card);
+            border:2px solid var(--border); color:var(--text); font-size:14px; outline:none; margin-bottom:6px;
+        }
         .categories {
             display:flex; gap:7px; overflow-x:auto; padding:2px 0 12px;
             scrollbar-width:none; -ms-overflow-style:none;
@@ -165,6 +170,13 @@
             display:flex; align-items:center; justify-content:center;
         }
         .sync-btn:active { transform:scale(0.9); }
+        .upload-area {
+            border:2px dashed var(--border); border-radius:12px; padding:16px;
+            text-align:center; cursor:pointer; margin-bottom:8px;
+        }
+        .upload-area:active { border-color:var(--accent); }
+        .img-preview { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+        .img-preview img { width:56px; height:56px; border-radius:8px; object-fit:cover; }
     </style>
 </head>
 <body>
@@ -199,6 +211,7 @@
         let searchQ = '';
         let currentView = 'catalog';
         let orders = [];
+        let tempImages = [];
 
         const defaultMetro = [
             {line:'Кировско-Выборгская',color:'#D32F2F',stations:[
@@ -221,8 +234,7 @@
         let metroData = [];
         let timeSlots = [
             {id:1,range:'10:00 – 12:00',av:true},{id:2,range:'12:00 – 14:00',av:true},
-            {id:3,range:'14:00 – 16:00',av:true},{id:4,range:'16:00 – 18:00',av:true},
-            {id:5,range:'18:00 – 20:00',av:true}
+            {id:3,range:'14:00 – 16:00',av:true},{id:4,range:'16:00 – 18:00',av:true},{id:5,range:'18:00 – 20:00',av:true}
         ];
 
         function loadData() {
@@ -254,9 +266,26 @@
             } catch(e) {}
         }
 
+        // Синхронизация товаров с сервера
         function syncProducts() {
             tg.sendData(JSON.stringify({action:'get_products'}));
             showToast('Синхронизация...');
+        }
+
+        // Админ: добавить товар через Web App
+        function addProductToServer(name, desc, price, stock, category, images) {
+            tg.sendData(JSON.stringify({
+                action:'add_product',
+                name, desc, price, stock, category, images
+            }));
+            showToast('Товар отправлен на сервер');
+            setTimeout(syncProducts, 800);
+        }
+
+        function deleteProductFromServer(id) {
+            tg.sendData(JSON.stringify({action:'delete_product', id}));
+            showToast('Товар удалён');
+            setTimeout(syncProducts, 800);
         }
 
         setTimeout(syncProducts, 500);
@@ -393,8 +422,7 @@
 
         function cancelOrder(id) {
             const o = orders.find(x=>x.id===id);
-            if (o && o.canEdit) { o.status='cancelled'; saveData(); showToast('Отменён'); renderContent();
-                tg.sendData(JSON.stringify({action:'cancel_order',order_id:id})); }
+            if (o && o.canEdit) { o.status='cancelled'; saveData(); showToast('Отменён'); renderContent(); }
         }
 
         function startCheckout() {
@@ -447,6 +475,19 @@
             if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
             let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
 
+            // Добавление товара
+            html += '<h4 style="margin:12px 0 6px;">📦 Добавить товар</h4>';
+            html += `<input id="an" class="admin-input" placeholder="Название">
+                <input id="ad" class="admin-input" placeholder="Описание">
+                <input id="ap" type="number" class="admin-input" placeholder="Цена (₽)">
+                <input id="as" type="number" class="admin-input" placeholder="Количество">
+                <select id="ac" class="admin-select">${categories.filter(c=>c.av).map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}</select>
+                <div class="upload-area" onclick="document.getElementById('imgUpload').click()">📷 Загрузить картинки</div>
+                <input type="file" id="imgUpload" multiple accept="image/*" onchange="previewImgs()" style="display:none;">
+                <div class="img-preview" id="imgPrev"></div>
+                <button class="btn-primary" onclick="addProductFromAdmin()">➕ Добавить на сервер</button>`;
+
+            // Заказы
             html += '<h4 style="margin:12px 0 6px;">📋 Заказы</h4>';
             if (!orders.length) html += '<p style="color:var(--text2);">Нет</p>';
             else orders.forEach(o => {
@@ -462,24 +503,55 @@
                 </div>`;
             });
 
+            // Категории
             html += '<h4 style="margin:12px 0 6px;">📂 Категории</h4>';
-            html += '<div style="display:flex;gap:6px;margin-bottom:6px;"><input id="newCat" class="search-input" placeholder="Название" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="addCat()">+</button></div>';
+            html += '<div style="display:flex;gap:6px;margin-bottom:6px;"><input id="newCat" class="admin-input" placeholder="Название" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="addCat()">+</button></div>';
             categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span>${c.name}</span><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div></div>`);
 
+            // Метро
             html += '<h4 style="margin:12px 0 6px;">🚇 Станции метро</h4>';
             metroData.forEach(line => {
                 html += `<p style="color:${line.color};font-weight:600;margin:6px 0 3px;">● ${line.line}</p>`;
                 line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;"><span>🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${line.line}','${s.name}')"></div></div>`);
             });
 
+            // Время
             html += '<h4 style="margin:12px 0 6px;">🕐 Время</h4>';
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span>🕐 ${t.range}</span><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div></div>`);
 
+            // Синхронизация
             html += `<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4>
-                <button class="btn-primary" onclick="syncProducts()">🔄 Загрузить товары с сервера</button>
-                <p style="font-size:11px;color:var(--text2);margin-top:6px;">Товары добавляются через бота:<br>Название|Описание|Цена|Кол-во|Категория</p>`;
+                <button class="btn-primary" onclick="syncProducts()">🔄 Загрузить товары с сервера</button>`;
 
             area.innerHTML = html;
+        }
+
+        function previewImgs() {
+            const files = document.getElementById('imgUpload').files;
+            tempImages = [];
+            const prev = document.getElementById('imgPrev');
+            prev.innerHTML = '';
+            for (let f of files) {
+                const reader = new FileReader();
+                reader.onload = e => { tempImages.push(e.target.result); prev.innerHTML += `<img src="${e.target.result}">`; };
+                reader.readAsDataURL(f);
+            }
+        }
+
+        function addProductFromAdmin() {
+            const name = document.getElementById('an')?.value?.trim();
+            const desc = document.getElementById('ad')?.value?.trim();
+            const price = parseFloat(document.getElementById('ap')?.value || 0);
+            const stock = parseInt(document.getElementById('as')?.value || 0);
+            const category = document.getElementById('ac')?.value || 'Без категории';
+            if (!name || price <= 0) { showToast('Введите название и цену'); return; }
+            addProductToServer(name, desc, price, stock, category, tempImages);
+            document.getElementById('an').value = '';
+            document.getElementById('ad').value = '';
+            document.getElementById('ap').value = '';
+            document.getElementById('as').value = '';
+            document.getElementById('imgPrev').innerHTML = '';
+            tempImages = [];
         }
 
         function updOrder(id,st) { const o=orders.find(x=>x.id===id); if(o){o.status=st;saveData();renderContent();} }
