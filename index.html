@@ -158,6 +158,13 @@
         @keyframes toastOut { from{opacity:1} to{opacity:0} }
         ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-thumb { background:#2a2a35; border-radius:2px; }
         .option-card.disabled { opacity:0.4; pointer-events:none; }
+        .sync-btn {
+            position:fixed; bottom:20px; right:20px; z-index:300;
+            width:50px; height:50px; border-radius:50%; background:var(--accent);
+            border:none; color:white; font-size:22px; cursor:pointer; box-shadow:0 4px 20px rgba(124,58,237,0.5);
+            display:flex; align-items:center; justify-content:center;
+        }
+        .sync-btn:active { transform:scale(0.9); }
     </style>
 </head>
 <body>
@@ -173,6 +180,7 @@
         </div>
         <div id="contentArea"></div>
     </div>
+    <button class="sync-btn" onclick="syncProducts()" title="Синхронизировать товары">🔄</button>
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
         <div class="modal" id="modalBox"></div>
@@ -255,7 +263,6 @@
                     ];
                     metroData = JSON.parse(JSON.stringify(defaultMetro));
                 }
-                // Пробуем загрузить товары из сессии
                 const sp = sessionStorage.getItem('hg_products');
                 if (sp) products = JSON.parse(sp);
             } catch(e) {
@@ -271,22 +278,14 @@
             } catch(e) {}
         }
 
-        // Загрузка товаров из бота
+        // ЗАПРОС ТОВАРОВ ИЗ БОТА
         function syncProducts() {
             tg.sendData(JSON.stringify({action:'get_products'}));
+            showToast('Запрос товаров...');
         }
 
-        // Обработка ответа от бота (ловим сообщение с товарами)
-        window.addEventListener('message', function(e) {
-            try {
-                const d = JSON.parse(e.data);
-                if (d.products) {
-                    products = d.products;
-                    saveData();
-                    renderContent();
-                }
-            } catch(ex) {}
-        });
+        // Вызываем при старте
+        setTimeout(syncProducts, 300);
 
         function checkAdmin() { if (isAdmin) document.getElementById('adminBtn').style.display = 'flex'; }
         function switchView(view) { currentView = view; renderContent(); }
@@ -319,7 +318,7 @@
                 </div>
                 <div class="products-grid">`;
 
-            let list = products.filter(p => p.is_available !== false);
+            let list = products;
             if (selectedCat !== 'Все') list = list.filter(p => p.category === selectedCat);
             if (searchQ) {
                 const q = searchQ.toLowerCase();
@@ -327,14 +326,13 @@
             }
 
             if (!list.length) {
-                html += '<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><p style="font-size:12px;color:var(--text2);margin-top:8px;">Нажмите 🛍️ для синхронизации</p></div>';
+                html += '<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncProducts()">🔄 Синхронизировать</button></div>';
             } else {
                 list.forEach(p => {
                     const inCart = cart.find(c => c.id === p.id);
-                    const imgHtml = p.images && p.images.length > 0 ? `<img src="${p.images[0]}" alt="${p.name}">` : (p.image || '📦');
                     html += `
                         <div class="product-card" onclick="openProduct(${p.id})">
-                            <div class="product-img">${imgHtml}</div>
+                            <div class="product-img">${p.image || '📦'}</div>
                             <div class="product-name">${p.name}</div>
                             <div class="product-desc">${p.desc || ''}</div>
                             <div class="product-bottom">
@@ -360,10 +358,9 @@
         function openProduct(id) {
             const p = products.find(x=>x.id===id);
             if (!p) return;
-            const imgs = (p.images && p.images.length) ? p.images.map(u=>`<img src="${u}" style="width:100%;border-radius:12px;margin-bottom:8px;">`).join('') : `<div style="font-size:64px;text-align:center;padding:20px;">${p.image||'📦'}</div>`;
             openModal(`
                 <div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
-                ${imgs}
+                <div style="font-size:64px;text-align:center;padding:20px;">${p.image||'📦'}</div>
                 <h2 style="font-size:18px;margin:8px 0;">${p.name}</h2>
                 <p style="color:#a1a1aa;margin-bottom:10px;">${p.desc||''}</p>
                 <span style="background:#1e1e2e;padding:5px 10px;border-radius:7px;font-size:11px;">📦 ${p.stock > 0 ? p.stock+' шт.' : 'Нет'}</span>
@@ -378,17 +375,15 @@
             if (!cart.length) {
                 html += '<div class="empty-state"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
             } else {
-                html += cart.map(i => {
-                    const imgHtml = i.images && i.images.length ? `<img src="${i.images[0]}">` : (i.image||'📦');
-                    return `<div class="cart-item">
-                        <div class="cart-img">${imgHtml}</div>
+                html += cart.map(i => `
+                    <div class="cart-item">
+                        <div class="cart-img">${i.image||'📦'}</div>
                         <div class="cart-info"><div class="cart-name">${i.name}</div><div class="cart-price">${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</div></div>
                         <div class="qty-group">
                             <button class="qty-btn" onclick="chQty(${i.id},-1)">−</button><span>${i.qty}</span>
                             <button class="qty-btn" onclick="chQty(${i.id},1)">+</button>
                         </div>
-                    </div>`;
-                }).join('');
+                    </div>`).join('');
                 html += `<div class="total-row"><span>Итого:</span><span class="total-val">${total.toLocaleString('ru-RU')} ₽</span></div>
                     <button class="btn-primary" onclick="startCheckout()">📋 Оформить</button>
                     <button class="btn-secondary" onclick="cart=[];saveData();renderContent();">🗑 Очистить</button>`;
@@ -471,7 +466,7 @@
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             const o = {id:Date.now(),items:[...cart],total,metro,time,status:'pending',canEdit:false,date:new Date().toISOString()};
             orders.unshift(o);
-            tg.sendData(JSON.stringify({action:'new_order',order:o,items:o.items.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty})),total,metro,time}));
+            tg.sendData(JSON.stringify({action:'new_order',items:o.items.map(i=>({name:i.name,price:i.price,qty:i.qty})),total,metro,time}));
             cart=[]; saveData(); closeModal(); showToast('Заказ оформлен!'); renderContent();
         }
 
@@ -509,7 +504,7 @@
 
             html += `<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4>
                 <button class="btn-primary" onclick="syncProducts()">🔄 Загрузить товары с сервера</button>
-                <button class="btn-secondary" onclick="localStorage.clear();sessionStorage.clear();location.reload();">🗑 Сбросить всё</button>`;
+                <p style="font-size:11px;color:var(--text2);margin-top:6px;">Товары добавляются через бота: Название|Описание|Цена|Кол-во|Категория</p>`;
 
             area.innerHTML = html;
         }
