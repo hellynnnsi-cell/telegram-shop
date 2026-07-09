@@ -170,13 +170,6 @@
             display:flex; align-items:center; justify-content:center;
         }
         .sync-btn:active { transform:scale(0.9); }
-        .upload-area {
-            border:2px dashed var(--border); border-radius:12px; padding:16px;
-            text-align:center; cursor:pointer; margin-bottom:8px;
-        }
-        .upload-area:active { border-color:var(--accent); }
-        .img-preview { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
-        .img-preview img { width:56px; height:56px; border-radius:8px; object-fit:cover; }
     </style>
 </head>
 <body>
@@ -192,7 +185,7 @@
         </div>
         <div id="contentArea"></div>
     </div>
-    <button class="sync-btn" onclick="syncProducts()">🔄</button>
+    <button class="sync-btn" onclick="loadProductsFromAPI()">🔄</button>
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
         <div class="modal" id="modalBox"></div>
@@ -203,6 +196,7 @@
         tg.expand(); tg.ready(); tg.MainButton.hide(); tg.enableClosingConfirmation();
         const user = tg.initDataUnsafe?.user || {};
         const isAdmin = user.username === 'helgirll';
+        const API_URL = 'http://194.77.71.245:5000/api';
 
         let products = [];
         let categories = [];
@@ -211,7 +205,6 @@
         let searchQ = '';
         let currentView = 'catalog';
         let orders = [];
-        let tempImages = [];
 
         const defaultMetro = [
             {line:'Кировско-Выборгская',color:'#D32F2F',stations:[
@@ -237,6 +230,44 @@
             {id:3,range:'14:00 – 16:00',av:true},{id:4,range:'16:00 – 18:00',av:true},{id:5,range:'18:00 – 20:00',av:true}
         ];
 
+        // ===== API =====
+        async function loadProductsFromAPI() {
+            try {
+                showToast('Загрузка...');
+                const resp = await fetch(`${API_URL}/products`);
+                const data = await resp.json();
+                products = data;
+                sessionStorage.setItem('hg_products', JSON.stringify(products));
+                renderContent();
+                showToast(`Загружено ${data.length} товаров`);
+            } catch(e) {
+                showToast('Ошибка загрузки');
+                const sp = sessionStorage.getItem('hg_products');
+                if (sp) products = JSON.parse(sp);
+                renderContent();
+            }
+        }
+
+        async function addProductAPI(name, desc, price, stock, category) {
+            try {
+                const resp = await fetch(`${API_URL}/products`, {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({name, desc, price, stock, category, images:[]})
+                });
+                if (resp.ok) { showToast('Добавлен!'); await loadProductsFromAPI(); }
+            } catch(e) { showToast('Ошибка'); }
+        }
+
+        async function deleteProductAPI(id) {
+            try {
+                await fetch(`${API_URL}/products/${id}`, {method:'DELETE'});
+                showToast('Удалён');
+                await loadProductsFromAPI();
+            } catch(e) { showToast('Ошибка'); }
+        }
+
+        // ===== LOCAL =====
         function loadData() {
             try {
                 const saved = localStorage.getItem('hg_data');
@@ -260,35 +291,8 @@
         }
 
         function saveData() {
-            try {
-                localStorage.setItem('hg_data', JSON.stringify({categories, cart, orders, metroData, timeSlots}));
-                sessionStorage.setItem('hg_products', JSON.stringify(products));
-            } catch(e) {}
+            try { localStorage.setItem('hg_data', JSON.stringify({categories, cart, orders, metroData, timeSlots})); } catch(e) {}
         }
-
-        // Синхронизация товаров с сервера
-        function syncProducts() {
-            tg.sendData(JSON.stringify({action:'get_products'}));
-            showToast('Синхронизация...');
-        }
-
-        // Админ: добавить товар через Web App
-        function addProductToServer(name, desc, price, stock, category, images) {
-            tg.sendData(JSON.stringify({
-                action:'add_product',
-                name, desc, price, stock, category, images
-            }));
-            showToast('Товар отправлен на сервер');
-            setTimeout(syncProducts, 800);
-        }
-
-        function deleteProductFromServer(id) {
-            tg.sendData(JSON.stringify({action:'delete_product', id}));
-            showToast('Товар удалён');
-            setTimeout(syncProducts, 800);
-        }
-
-        setTimeout(syncProducts, 500);
 
         function checkAdmin() { if (isAdmin) document.getElementById('adminBtn').style.display = 'flex'; }
         function switchView(view) { currentView = view; renderContent(); }
@@ -328,7 +332,7 @@
             }
 
             if (!list.length) {
-                html += `<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncProducts()">🔄 Синхронизировать</button></div>`;
+                html += `<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="loadProductsFromAPI()">🔄 Загрузить с сервера</button></div>`;
             } else {
                 list.forEach(p => {
                     const inCart = cart.find(c => c.id === p.id);
@@ -378,13 +382,9 @@
                 html += '<div class="empty-state"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
             } else {
                 html += cart.map(i => `
-                    <div class="cart-item">
-                        <div class="cart-img">${i.image||'📦'}</div>
+                    <div class="cart-item"><div class="cart-img">${i.image||'📦'}</div>
                         <div class="cart-info"><div class="cart-name">${i.name}</div><div class="cart-price">${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</div></div>
-                        <div class="qty-group">
-                            <button class="qty-btn" onclick="chQty(${i.id},-1)">−</button><span>${i.qty}</span>
-                            <button class="qty-btn" onclick="chQty(${i.id},1)">+</button>
-                        </div>
+                        <div class="qty-group"><button class="qty-btn" onclick="chQty(${i.id},-1)">−</button><span>${i.qty}</span><button class="qty-btn" onclick="chQty(${i.id},1)">+</button></div>
                     </div>`).join('');
                 html += `<div class="total-row"><span>Итого:</span><span class="total-val">${total.toLocaleString('ru-RU')} ₽</span></div>
                     <button class="btn-primary" onclick="startCheckout()">📋 Оформить</button>
@@ -401,28 +401,11 @@
         }
 
         function renderProfile(area) {
-            let html = `<h3 style="margin-bottom:10px;">👤 Профиль</h3>
-                <div class="confirm-box"><p>👤 <b>${user.first_name||'Пользователь'}</b></p><p>📎 @${user.username||'нет'}</p><p>📅 Заказов: ${orders.length}</p></div>
-                <h4 style="margin:12px 0 6px;">📋 История заказов</h4>`;
-            if (!orders.length) html += '<p style="color:var(--text2);">Нет заказов</p>';
-            else {
-                orders.forEach(o => {
-                    const sm = {pending:'⏳ Ожидает',confirmed:'✅ Подтверждён',completed:'🎉 Выполнен',cancelled:'❌ Отменён'};
-                    const its = (o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');
-                    html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
-                        <div style="display:flex;justify-content:space-between;width:100%;"><b>#${o.id.toString().slice(-6)}</b><span>${sm[o.status]||o.status}</span></div>
-                        <p style="font-size:11px;color:var(--text2);">${its}</p>
-                        <p style="font-size:11px;">💰 ${(o.total||0).toLocaleString('ru-RU')} ₽ | 📍 ${o.metro||'—'}</p>
-                        ${o.canEdit && o.status==='pending' ? `<button class="btn-secondary" style="margin-top:6px;" onclick="cancelOrder(${o.id})">❌ Отменить</button>` : ''}
-                    </div>`;
-                });
-            }
+            let html = `<h3 style="margin-bottom:10px;">👤 Профиль</h3><div class="confirm-box"><p>👤 <b>${user.first_name||'Пользователь'}</b></p><p>📎 @${user.username||'нет'}</p></div>
+                <h4 style="margin:12px 0 6px;">📋 Заказы</h4>`;
+            if (!orders.length) html += '<p style="color:var(--text2);">Нет</p>';
+            else orders.forEach(o => html += `<div class="option-card" style="flex-direction:column;"><b>#${o.id.toString().slice(-6)}</b> | ${(o.total||0).toLocaleString('ru-RU')} ₽ | ${o.metro||'—'}</div>`);
             area.innerHTML = html;
-        }
-
-        function cancelOrder(id) {
-            const o = orders.find(x=>x.id===id);
-            if (o && o.canEdit) { o.status='cancelled'; saveData(); showToast('Отменён'); renderContent(); }
         }
 
         function startCheckout() {
@@ -434,16 +417,14 @@
             let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📍 Выберите метро (СПб)</div>';
             metroData.forEach(line => {
                 html += `<p style="color:${line.color};font-weight:600;margin:8px 0 4px;">● ${line.line}</p>`;
-                line.stations.forEach(s => {
-                    html += `<div class="option-card${!s.av?' disabled':''}" onclick="${s.av?`pickMetro('${s.name}')`:''}"><span>🚇 ${s.name}</span>${s.av?'<span style="color:#a855f7;">→</span>':'<span style="color:#ef4444;font-size:11px;">недоступна</span>'}</div>`;
-                });
+                line.stations.forEach(s => html += `<div class="option-card${!s.av?' disabled':''}" onclick="${s.av?`pickMetro('${s.name}')`:''}"><span>🚇 ${s.name}</span>${s.av?'<span style="color:#a855f7;">→</span>':'<span style="color:#ef4444;">нет</span>'}</div>`);
             });
             return html;
         }
 
         function pickMetro(station) {
-            const slots = timeSlots.filter(t=>t.av!==false);
-            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">🕐 Время</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station}</p>`;
+            const slots = timeSlots.filter(t=>t.av);
+            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">🕐 Время</div><p>📍 ${station}</p>`;
             slots.forEach(t => html += `<div class="option-card" onclick="pickTime('${station}','${t.range}')"><span>🕐 ${t.range}</span><span style="color:#a855f7;">→</span></div>`);
             html += '<button class="btn-secondary" onclick="openModal(metroModal())">← Назад</button>';
             openModal(html);
@@ -451,13 +432,10 @@
 
         function pickTime(metro,time) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
-            const items = cart.map(i=>`<div style="display:flex;justify-content:space-between;font-size:12px;"><span>${i.name} x${i.qty}</span><span>${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</span></div>`).join('');
             openModal(`
                 <div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
                 <div class="modal-title">✅ Подтверждение</div>
-                <div class="confirm-box"><p>📍 <b>${metro}</b></p><p>🕐 <b>${time}</b></p><p>📦 ${cart.reduce((s,i)=>s+i.qty,0)} шт.</p>
-                <div style="border-top:1px solid #2a2a35;padding-top:8px;margin-top:6px;">${items}</div>
-                <p style="font-size:16px;font-weight:700;color:#a855f7;margin-top:6px;">💰 ${total.toLocaleString('ru-RU')} ₽</p></div>
+                <div class="confirm-box"><p>📍 <b>${metro}</b></p><p>🕐 <b>${time}</b></p><p>📦 ${cart.reduce((s,i)=>s+i.qty,0)} шт.</p><p style="font-size:18px;font-weight:700;color:#a855f7;">💰 ${total.toLocaleString('ru-RU')} ₽</p></div>
                 <button class="btn-primary" onclick="sendOrder('${metro}','${time}')">✅ Подтвердить</button>
                 <button class="btn-secondary" onclick="pickMetro('${metro}')">← Назад</button>
             `);
@@ -465,110 +443,45 @@
 
         function sendOrder(metro,time) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
-            const o = {id:Date.now(),items:[...cart],total,metro,time,status:'pending',canEdit:false,date:new Date().toISOString()};
-            orders.unshift(o);
-            tg.sendData(JSON.stringify({action:'new_order',items:o.items.map(i=>({name:i.name,price:i.price,qty:i.qty})),total,metro,time}));
+            orders.unshift({id:Date.now(),items:[...cart],total,metro,time,status:'pending'});
+            tg.sendData(JSON.stringify({action:'new_order',items:cart.map(i=>({name:i.name,price:i.price,qty:i.qty})),total,metro,time}));
             cart=[]; saveData(); closeModal(); showToast('Заказ оформлен!'); renderContent();
         }
 
         function renderAdmin(area) {
             if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
             let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
-
-            // Добавление товара
-            html += '<h4 style="margin:12px 0 6px;">📦 Добавить товар</h4>';
-            html += `<input id="an" class="admin-input" placeholder="Название">
+            html += '<h4 style="margin:12px 0 6px;">📦 Добавить товар на сервер</h4>';
+            html += `<input id="an" class="admin-input" placeholder="Название товара">
                 <input id="ad" class="admin-input" placeholder="Описание">
                 <input id="ap" type="number" class="admin-input" placeholder="Цена (₽)">
-                <input id="as" type="number" class="admin-input" placeholder="Количество">
+                <input id="as" type="number" class="admin-input" placeholder="Количество на складе">
                 <select id="ac" class="admin-select">${categories.filter(c=>c.av).map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}</select>
-                <div class="upload-area" onclick="document.getElementById('imgUpload').click()">📷 Загрузить картинки</div>
-                <input type="file" id="imgUpload" multiple accept="image/*" onchange="previewImgs()" style="display:none;">
-                <div class="img-preview" id="imgPrev"></div>
-                <button class="btn-primary" onclick="addProductFromAdmin()">➕ Добавить на сервер</button>`;
-
-            // Заказы
-            html += '<h4 style="margin:12px 0 6px;">📋 Заказы</h4>';
-            if (!orders.length) html += '<p style="color:var(--text2);">Нет</p>';
-            else orders.forEach(o => {
-                const sm = {pending:'⏳',confirmed:'✅',completed:'🎉',cancelled:'❌'};
-                html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
-                    <b>#${o.id.toString().slice(-6)}</b> | ${(o.total||0).toLocaleString('ru-RU')} ₽ | ${sm[o.status]}
-                    <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
-                        ${o.status==='pending'?`<button class="btn-primary" style="width:auto;padding:5px 10px;font-size:11px;" onclick="updOrder(${o.id},'confirmed')">✅</button>`:''}
-                        ${o.status==='confirmed'?`<button class="btn-primary" style="width:auto;padding:5px 10px;font-size:11px;" onclick="updOrder(${o.id},'completed')">🎉</button>`:''}
-                        ${o.status==='pending'?`<button class="btn-danger" style="width:auto;padding:5px 10px;font-size:11px;" onclick="updOrder(${o.id},'cancelled')">❌</button>`:''}
-                        <button class="btn-secondary" style="width:auto;padding:5px 10px;font-size:11px;" onclick="toggleEdit(${o.id})">✏️ ${o.canEdit?'Запретить':'Разрешить'} отмену</button>
-                    </div>
-                </div>`;
-            });
-
-            // Категории
-            html += '<h4 style="margin:12px 0 6px;">📂 Категории</h4>';
-            html += '<div style="display:flex;gap:6px;margin-bottom:6px;"><input id="newCat" class="admin-input" placeholder="Название" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="addCat()">+</button></div>';
-            categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span>${c.name}</span><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div></div>`);
-
-            // Метро
-            html += '<h4 style="margin:12px 0 6px;">🚇 Станции метро</h4>';
-            metroData.forEach(line => {
-                html += `<p style="color:${line.color};font-weight:600;margin:6px 0 3px;">● ${line.line}</p>`;
-                line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;"><span>🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${line.line}','${s.name}')"></div></div>`);
-            });
-
-            // Время
-            html += '<h4 style="margin:12px 0 6px;">🕐 Время</h4>';
-            timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span>🕐 ${t.range}</span><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div></div>`);
-
-            // Синхронизация
-            html += `<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4>
-                <button class="btn-primary" onclick="syncProducts()">🔄 Загрузить товары с сервера</button>`;
-
+                <button class="btn-primary" onclick="addFromAdmin()">➕ Добавить на сервер</button>`;
+            html += '<h4 style="margin:12px 0 6px;">📋 Товары на сервере</h4>';
+            if (!products.length) html += '<p style="color:var(--text2);">Нет товаров</p>';
+            else products.forEach(p => html += `<div class="option-card" style="justify-content:space-between;"><span>${p.name} | ${p.price}₽ | ${p.stock}шт</span><button class="btn-danger" style="width:auto;padding:5px 10px;" onclick="deleteProductAPI(${p.id})">❌</button></div>`);
+            html += '<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4><button class="btn-primary" onclick="loadProductsFromAPI()">🔄 Загрузить товары с сервера</button>';
             area.innerHTML = html;
         }
 
-        function previewImgs() {
-            const files = document.getElementById('imgUpload').files;
-            tempImages = [];
-            const prev = document.getElementById('imgPrev');
-            prev.innerHTML = '';
-            for (let f of files) {
-                const reader = new FileReader();
-                reader.onload = e => { tempImages.push(e.target.result); prev.innerHTML += `<img src="${e.target.result}">`; };
-                reader.readAsDataURL(f);
-            }
-        }
-
-        function addProductFromAdmin() {
+        function addFromAdmin() {
             const name = document.getElementById('an')?.value?.trim();
             const desc = document.getElementById('ad')?.value?.trim();
-            const price = parseFloat(document.getElementById('ap')?.value || 0);
-            const stock = parseInt(document.getElementById('as')?.value || 0);
-            const category = document.getElementById('ac')?.value || 'Без категории';
-            if (!name || price <= 0) { showToast('Введите название и цену'); return; }
-            addProductToServer(name, desc, price, stock, category, tempImages);
-            document.getElementById('an').value = '';
-            document.getElementById('ad').value = '';
-            document.getElementById('ap').value = '';
-            document.getElementById('as').value = '';
-            document.getElementById('imgPrev').innerHTML = '';
-            tempImages = [];
+            const price = parseFloat(document.getElementById('ap')?.value||0);
+            const stock = parseInt(document.getElementById('as')?.value||0);
+            const cat = document.getElementById('ac')?.value||'Без категории';
+            if (!name||price<=0) { showToast('Введите название и цену'); return; }
+            addProductAPI(name, desc, price, stock, cat);
+            document.getElementById('an').value=''; document.getElementById('ad').value='';
+            document.getElementById('ap').value=''; document.getElementById('as').value='';
         }
-
-        function updOrder(id,st) { const o=orders.find(x=>x.id===id); if(o){o.status=st;saveData();renderContent();} }
-        function toggleEdit(id) { const o=orders.find(x=>x.id===id); if(o){o.canEdit=!o.canEdit;saveData();renderContent();} }
-        function addCat() { const n=document.getElementById('newCat')?.value?.trim(); if(n){categories.push({id:Date.now(),name:n,av:true});saveData();renderContent();} }
-        function tgCat(id) { const c=categories.find(x=>x.id===id); if(c){c.av=c.av===false?true:false;saveData();renderContent();} }
-        function tgMetro(line,name) {
-            const l=metroData.find(x=>x.line===line);
-            if(l){const s=l.stations.find(x=>x.name===name);if(s){s.av=s.av===false?true:false;saveData();renderContent();}}
-        }
-        function tgTime(id) { const t=timeSlots.find(x=>x.id===id); if(t){t.av=t.av===false?true:false;saveData();renderContent();} }
 
         function openModal(html) { document.getElementById('modalBox').innerHTML=html; document.getElementById('modalOverlay').style.display='flex'; }
         function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
         function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 
-        loadData(); checkAdmin(); renderContent();
+        loadData(); checkAdmin(); loadProductsFromAPI();
     </script>
 </body>
 </html>
