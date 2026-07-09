@@ -295,24 +295,53 @@
             {id:5,range:'18:00 – 20:00',av:true}
         ];
 
-        function loadData() {
+        // ===== ЗАГРУЗКА ДАННЫХ ИЗ ЕДИНОЙ БАЗЫ =====
+        async function loadData() {
             try {
-                const saved = localStorage.getItem('hg_data');
-                if (saved) {
-                    const d = JSON.parse(saved);
-                    products = d.products || [];
-                    categories = d.categories || [];
-                    cart = d.cart || [];
-                    orders = d.orders || [];
-                    metroData = d.metroData || JSON.parse(JSON.stringify(defaultMetro));
-                    timeSlots = d.timeSlots || timeSlots;
+                // Загружаем данные из CloudStorage (единая база для всех)
+                const [productsData, categoriesData, metroDataStr, timeSlotsData] = await Promise.all([
+                    tg.CloudStorage.getItem('shared_products'),
+                    tg.CloudStorage.getItem('shared_categories'),
+                    tg.CloudStorage.getItem('shared_metro'),
+                    tg.CloudStorage.getItem('shared_timeslots')
+                ]);
+
+                if (productsData) {
+                    products = JSON.parse(productsData);
+                } else {
+                    products = [];
+                }
+
+                if (categoriesData) {
+                    categories = JSON.parse(categoriesData);
                 } else {
                     categories = [
                         {id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true},
                         {id:3,name:'Наушники',av:true},{id:4,name:'Игры',av:true},
                         {id:5,name:'Планшеты',av:true},{id:6,name:'Часы',av:true},{id:7,name:'Техника',av:true}
                     ];
+                    await tg.CloudStorage.setItem('shared_categories', JSON.stringify(categories));
+                }
+
+                if (metroDataStr) {
+                    metroData = JSON.parse(metroDataStr);
+                } else {
                     metroData = JSON.parse(JSON.stringify(defaultMetro));
+                    await tg.CloudStorage.setItem('shared_metro', JSON.stringify(metroData));
+                }
+
+                if (timeSlotsData) {
+                    timeSlots = JSON.parse(timeSlotsData);
+                } else {
+                    await tg.CloudStorage.setItem('shared_timeslots', JSON.stringify(timeSlots));
+                }
+
+                // Загружаем персональные данные пользователя из localStorage
+                const saved = localStorage.getItem('hg_user_data');
+                if (saved) {
+                    const d = JSON.parse(saved);
+                    cart = d.cart || [];
+                    orders = d.orders || [];
                 }
             } catch(e) {
                 categories = [{id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true}];
@@ -320,10 +349,21 @@
             }
         }
 
-        function saveData() {
+        async function saveSharedData() {
             try {
-                localStorage.setItem('hg_data', JSON.stringify({
-                    products, categories, cart, orders, metroData, timeSlots
+                await Promise.all([
+                    tg.CloudStorage.setItem('shared_products', JSON.stringify(products)),
+                    tg.CloudStorage.setItem('shared_categories', JSON.stringify(categories)),
+                    tg.CloudStorage.setItem('shared_metro', JSON.stringify(metroData)),
+                    tg.CloudStorage.setItem('shared_timeslots', JSON.stringify(timeSlots))
+                ]);
+            } catch(e) {}
+        }
+
+        function saveUserData() {
+            try {
+                localStorage.setItem('hg_user_data', JSON.stringify({
+                    cart, orders
                 }));
             } catch(e) {}
         }
@@ -412,7 +452,7 @@
             if (!p || p.stock < 1) { showToast('Нет в наличии'); return; }
             const ex = cart.find(x=>x.id===id);
             ex ? ex.qty++ : cart.push({...p, qty:1});
-            saveData(); renderContent();
+            saveUserData(); renderContent();
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
 
@@ -451,7 +491,7 @@
                 }).join('');
                 html += `<div class="total-row"><span>Итого:</span><span class="total-val">${total.toLocaleString('ru-RU')} ₽</span></div>
                     <button class="btn-primary" onclick="startCheckout()">📋 Оформить</button>
-                    <button class="btn-secondary" onclick="cart=[];saveData();renderContent();">🗑 Очистить</button>`;
+                    <button class="btn-secondary" onclick="cart=[];saveUserData();renderContent();">🗑 Очистить</button>`;
             }
             area.innerHTML = html;
         }
@@ -462,7 +502,7 @@
             i.qty += d;
             if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
             if (i.qty > (i.stock||99)) i.qty = i.stock;
-            saveData(); renderContent();
+            saveUserData(); renderContent();
         }
 
         // ===== ПРОФИЛЬ =====
@@ -488,7 +528,7 @@
 
         function cancelOrder(id) {
             const o = orders.find(x=>x.id===id);
-            if (o && o.canEdit) { o.status='cancelled'; saveData(); showToast('Отменён'); renderContent();
+            if (o && o.canEdit) { o.status='cancelled'; saveUserData(); showToast('Отменён'); renderContent();
                 tg.sendData(JSON.stringify({action:'cancel_order',order_id:id})); }
         }
 
@@ -531,12 +571,22 @@
             `);
         }
 
-        function sendOrder(metro,time) {
+        async function sendOrder(metro,time) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             const o = {id:Date.now(),items:[...cart],total,metro,time,status:'pending',canEdit:false,date:new Date().toISOString()};
             orders.unshift(o);
+            
+            // Обновляем остатки товаров в общей базе
+            cart.forEach(cartItem => {
+                const product = products.find(p => p.id === cartItem.id);
+                if (product) {
+                    product.stock = Math.max(0, (product.stock || 0) - cartItem.qty);
+                }
+            });
+            await saveSharedData();
+            
             tg.sendData(JSON.stringify({action:'new_order',order:o,items:o.items.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty})),total,metro,time}));
-            cart=[]; saveData(); closeModal(); showToast('Заказ оформлен!'); renderContent();
+            cart=[]; saveUserData(); closeModal(); showToast('Заказ оформлен!'); renderContent();
         }
 
         // ===== АДМИН-ПАНЕЛЬ =====
@@ -591,15 +641,15 @@
             area.innerHTML = html;
         }
 
-        function updOrder(id,st) { const o=orders.find(x=>x.id===id); if(o){o.status=st;saveData();renderContent();} }
-        function toggleEdit(id) { const o=orders.find(x=>x.id===id); if(o){o.canEdit=!o.canEdit;saveData();renderContent();} }
-        function addCat() { const n=document.getElementById('newCat')?.value?.trim(); if(n){categories.push({id:Date.now(),name:n,av:true});saveData();renderContent();} }
-        function tgCat(id) { const c=categories.find(x=>x.id===id); if(c){c.av=c.av===false?true:false;saveData();renderContent();} }
-        function tgMetro(line,name) {
+        function updOrder(id,st) { const o=orders.find(x=>x.id===id); if(o){o.status=st;saveUserData();renderContent();} }
+        function toggleEdit(id) { const o=orders.find(x=>x.id===id); if(o){o.canEdit=!o.canEdit;saveUserData();renderContent();} }
+        async function addCat() { const n=document.getElementById('newCat')?.value?.trim(); if(n){categories.push({id:Date.now(),name:n,av:true});await saveSharedData();renderContent();} }
+        async function tgCat(id) { const c=categories.find(x=>x.id===id); if(c){c.av=c.av===false?true:false;await saveSharedData();renderContent();} }
+        async function tgMetro(line,name) {
             const l=metroData.find(x=>x.line===line);
-            if(l){const s=l.stations.find(x=>x.name===name);if(s){s.av=s.av===false?true:false;saveData();renderContent();}}
+            if(l){const s=l.stations.find(x=>x.name===name);if(s){s.av=s.av===false?true:false;await saveSharedData();renderContent();}}
         }
-        function tgTime(id) { const t=timeSlots.find(x=>x.id===id); if(t){t.av=t.av===false?true:false;saveData();renderContent();} }
+        async function tgTime(id) { const t=timeSlots.find(x=>x.id===id); if(t){t.av=t.av===false?true:false;await saveSharedData();renderContent();} }
 
         function previewImages() {
             const files = document.getElementById('imgUpload').files;
@@ -616,7 +666,7 @@
             }
         }
 
-        function addProduct() {
+        async function addProduct() {
             const name = document.getElementById('pn')?.value?.trim();
             const desc = document.getElementById('pd')?.value?.trim();
             const price = parseFloat(document.getElementById('pp')?.value||0);
@@ -625,7 +675,7 @@
             if (name && price > 0) {
                 products.push({id:Date.now(),name,desc,price,stock,category_id:catId,av:true,images:tempImages.length?[...tempImages]:[],image:'📦'});
                 tempImages = [];
-                saveData(); renderContent(); showToast('Товар добавлен');
+                await saveSharedData(); renderContent(); showToast('Товар добавлен');
             }
         }
 
@@ -635,7 +685,12 @@
         function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 
         // ===== INIT =====
-        loadData(); checkAdmin(); renderContent();
+        async function init() {
+            await loadData();
+            checkAdmin();
+            renderContent();
+        }
+        init();
     </script>
 </body>
 </html>
