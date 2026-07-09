@@ -33,8 +33,6 @@
             75%{transform:translate(-2%,-0.5%) rotate(0.3deg)}
         }
         .app { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:12px 14px 100px; }
-
-        /* HEADER */
         .header {
             display:flex; align-items:center; justify-content:space-between;
             padding:6px 0 14px; position:sticky; top:0; z-index:50;
@@ -53,8 +51,6 @@
             min-width:18px; height:18px; border-radius:9px; font-size:10px; font-weight:700;
             display:flex; align-items:center; justify-content:center; padding:0 4px;
         }
-
-        /* SEARCH */
         .search-wrap { display:flex; gap:8px; margin-bottom:12px; }
         .search-input {
             flex:1; padding:12px 14px; border-radius:14px; background:var(--card);
@@ -62,8 +58,6 @@
         }
         .search-input:focus { border-color:var(--accent); }
         .search-input::placeholder { color:#52525b; }
-
-        /* CATEGORIES */
         .categories {
             display:flex; gap:7px; overflow-x:auto; padding:2px 0 12px;
             scrollbar-width:none; -ms-overflow-style:none;
@@ -74,8 +68,6 @@
             white-space:nowrap; font-size:12px; cursor:pointer; transition:all 0.2s; color:var(--text2); flex-shrink:0;
         }
         .chip.active { background:var(--accent); border-color:var(--accent); color:white; font-weight:600; }
-
-        /* PRODUCTS */
         .products-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .product-card {
             background:var(--card); border-radius:16px; padding:12px; border:1px solid var(--border);
@@ -85,12 +77,9 @@
         .product-img {
             width:100%; aspect-ratio:1; border-radius:12px; display:flex; align-items:center;
             justify-content:center; font-size:44px; margin-bottom:8px; position:relative;
-            background:linear-gradient(145deg, #1e1e2e 0%, #16162a 100%);
-            overflow:hidden;
+            background:linear-gradient(145deg, #1e1e2e 0%, #16162a 100%); overflow:hidden;
         }
-        .product-img img {
-            width:100%; height:100%; object-fit:cover; border-radius:12px;
-        }
+        .product-img img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
         .product-name { font-size:13px; font-weight:600; margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .product-desc { font-size:11px; color:var(--text2); margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
         .product-bottom { display:flex; align-items:center; justify-content:space-between; }
@@ -103,8 +92,6 @@
         }
         .btn-add:active { transform:scale(0.85); }
         .btn-add.in-cart { background:var(--green); }
-
-        /* MODAL */
         .modal-overlay {
             position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200;
             display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s;
@@ -123,16 +110,6 @@
             cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;
         }
         .modal-title { font-size:18px; font-weight:700; margin-bottom:14px; }
-
-        /* TABS */
-        .modal-tabs { display:flex; gap:4px; background:var(--card2); border-radius:10px; padding:3px; margin-bottom:14px; }
-        .modal-tab {
-            flex:1; padding:8px; border-radius:8px; text-align:center; font-size:12px;
-            cursor:pointer; color:var(--text2); transition:all 0.2s;
-        }
-        .modal-tab.active { background:var(--accent); color:white; font-weight:600; }
-
-        /* ITEMS */
         .cart-item, .option-card {
             display:flex; align-items:center; gap:10px; padding:12px;
             background:var(--card2); border-radius:12px; margin-bottom:6px; cursor:pointer; transition:all 0.2s;
@@ -151,8 +128,6 @@
             width:26px; height:26px; border-radius:7px; background:#2a2a35; border:none;
             color:white; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
-
-        /* BUTTONS */
         .btn-primary {
             width:100%; padding:14px; border-radius:14px;
             background:linear-gradient(135deg, var(--accent), var(--accent2));
@@ -164,39 +139,15 @@
             border:1px solid var(--border); color:var(--text); font-size:13px; cursor:pointer; margin-top:6px;
         }
         .btn-danger { background:var(--red) !important; }
-
-        .total-row {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:14px 0; border-top:1px solid #1e1e2e; margin-top:6px;
-        }
+        .total-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-top:1px solid #1e1e2e; margin-top:6px; }
         .total-val { font-size:20px; font-weight:800; color:var(--accent2); }
-
-        /* Toggle switch */
-        .toggle {
-            width:44px; height:24px; border-radius:12px; background:#3a3a45;
-            position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0;
-        }
+        .toggle { width:44px; height:24px; border-radius:12px; background:#3a3a45; position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0; }
         .toggle.on { background:var(--accent); }
-        .toggle::after {
-            content:''; position:absolute; top:2px; left:2px; width:20px; height:20px;
-            border-radius:50%; background:white; transition:all 0.2s;
-        }
+        .toggle::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:white; transition:all 0.2s; }
         .toggle.on::after { left:22px; }
-
         .empty-state { text-align:center; padding:40px 20px; color:var(--text2); }
         .empty-icon { font-size:48px; margin-bottom:10px; }
         .confirm-box { background:var(--card2); padding:14px; border-radius:12px; margin-bottom:10px; line-height:1.8; font-size:13px; }
-
-        /* Upload */
-        .upload-area {
-            border:2px dashed var(--border); border-radius:12px; padding:20px;
-            text-align:center; cursor:pointer; margin-bottom:10px; transition:all 0.2s;
-        }
-        .upload-area:active { border-color:var(--accent); background:var(--card2); }
-        .upload-area input { display:none; }
-        .img-preview { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
-        .img-preview img { width:60px; height:60px; border-radius:8px; object-fit:cover; }
-
         .toast {
             position:fixed; top:16px; left:50%; transform:translateX(-50%);
             background:var(--green); color:white; padding:8px 20px; border-radius:24px;
@@ -206,27 +157,22 @@
         @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         @keyframes toastOut { from{opacity:1} to{opacity:0} }
         ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-thumb { background:#2a2a35; border-radius:2px; }
+        .option-card.disabled { opacity:0.4; pointer-events:none; }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- HEADER ТОЛЬКО ИКОНКИ -->
         <div class="header">
             <div class="logo">Helgirll Test</div>
             <div class="header-actions">
-                <div class="icon-btn" onclick="switchView('catalog')" title="Каталог">🛍️</div>
-                <div class="icon-btn" onclick="switchView('cart')" title="Корзина">
-                    🛒<span class="badge" id="cartBadge">0</span>
-                </div>
-                <div class="icon-btn" onclick="switchView('profile')" title="Профиль">👤</div>
-                <div class="icon-btn" id="adminBtn" style="display:none" onclick="switchView('admin')" title="Админ">⚙️</div>
+                <div class="icon-btn" onclick="switchView('catalog')">🛍️</div>
+                <div class="icon-btn" onclick="switchView('cart')">🛒<span class="badge" id="cartBadge">0</span></div>
+                <div class="icon-btn" onclick="switchView('profile')">👤</div>
+                <div class="icon-btn" id="adminBtn" style="display:none" onclick="switchView('admin')">⚙️</div>
             </div>
         </div>
-
-        <!-- ОСНОВНОЙ КОНТЕНТ -->
         <div id="contentArea"></div>
     </div>
-
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
         <div class="modal" id="modalBox"></div>
@@ -235,11 +181,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.ready(); tg.MainButton.hide(); tg.enableClosingConfirmation();
-
         const user = tg.initDataUnsafe?.user || {};
         const isAdmin = user.username === 'helgirll';
 
-        // ===== ДАННЫЕ =====
         let products = [];
         let categories = [];
         let cart = [];
@@ -247,9 +191,7 @@
         let searchQ = '';
         let currentView = 'catalog';
         let orders = [];
-        let tempImages = [];
 
-        // Все станции метро СПб
         const defaultMetro = [
             {line:'Кировско-Выборгская',color:'#D32F2F',stations:[
                 {name:'Девяткино',av:true},{name:'Гражданский проспект',av:true},{name:'Академическая',av:true},
@@ -300,7 +242,6 @@
                 const saved = localStorage.getItem('hg_data');
                 if (saved) {
                     const d = JSON.parse(saved);
-                    products = d.products || [];
                     categories = d.categories || [];
                     cart = d.cart || [];
                     orders = d.orders || [];
@@ -314,37 +255,49 @@
                     ];
                     metroData = JSON.parse(JSON.stringify(defaultMetro));
                 }
+                // Пробуем загрузить товары из сессии
+                const sp = sessionStorage.getItem('hg_products');
+                if (sp) products = JSON.parse(sp);
             } catch(e) {
-                categories = [{id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true}];
+                categories = [{id:1,name:'Телефоны',av:true}];
                 metroData = JSON.parse(JSON.stringify(defaultMetro));
             }
         }
 
         function saveData() {
             try {
-                localStorage.setItem('hg_data', JSON.stringify({
-                    products, categories, cart, orders, metroData, timeSlots
-                }));
+                localStorage.setItem('hg_data', JSON.stringify({categories, cart, orders, metroData, timeSlots}));
+                sessionStorage.setItem('hg_products', JSON.stringify(products));
             } catch(e) {}
         }
 
-        function checkAdmin() {
-            if (isAdmin) document.getElementById('adminBtn').style.display = 'flex';
+        // Загрузка товаров из бота
+        function syncProducts() {
+            tg.sendData(JSON.stringify({action:'get_products'}));
         }
 
-        function switchView(view) {
-            currentView = view;
-            renderContent();
-        }
+        // Обработка ответа от бота (ловим сообщение с товарами)
+        window.addEventListener('message', function(e) {
+            try {
+                const d = JSON.parse(e.data);
+                if (d.products) {
+                    products = d.products;
+                    saveData();
+                    renderContent();
+                }
+            } catch(ex) {}
+        });
 
+        function checkAdmin() { if (isAdmin) document.getElementById('adminBtn').style.display = 'flex'; }
+        function switchView(view) { currentView = view; renderContent(); }
         function showToast(text) {
-            const t = document.createElement('div');
-            t.className = 'toast'; t.textContent = text;
+            const t = document.createElement('div'); t.className = 'toast'; t.textContent = text;
             document.getElementById('toastContainer').appendChild(t);
             setTimeout(() => t.remove(), 1800);
         }
 
-        // ===== РЕНДЕР =====
+        function updateBadge() { document.getElementById('cartBadge').textContent = cart.reduce((s,i)=>s+i.qty,0); }
+
         function renderContent() {
             const area = document.getElementById('contentArea');
             switch(currentView) {
@@ -356,41 +309,29 @@
             updateBadge();
         }
 
-        function updateBadge() {
-            document.getElementById('cartBadge').textContent = cart.reduce((s,i)=>s+i.qty,0);
-        }
-
-        // ===== КАТАЛОГ =====
         function renderCatalog(area) {
             const activeCats = categories.filter(c => c.av !== false);
             let html = `
-                <div class="search-wrap">
-                    <input type="text" class="search-input" placeholder="🔍 Поиск..." value="${searchQ}" oninput="searchQ=this.value;renderContent()">
-                </div>
+                <div class="search-wrap"><input type="text" class="search-input" placeholder="🔍 Поиск..." value="${searchQ}" oninput="searchQ=this.value;renderContent()"></div>
                 <div class="categories">
                     <div class="chip${selectedCat==='Все'?' active':''}" onclick="selectedCat='Все';renderContent()">Все</div>
                     ${activeCats.map(c => `<div class="chip${selectedCat===c.name?' active':''}" onclick="selectedCat='${c.name}';renderContent()">${c.name}</div>`).join('')}
                 </div>
                 <div class="products-grid">`;
 
-            let list = products.filter(p => p.av !== false);
-            if (selectedCat !== 'Все') {
-                const cat = categories.find(c => c.name === selectedCat);
-                if (cat) list = list.filter(p => p.category_id === cat.id);
-            }
+            let list = products.filter(p => p.is_available !== false);
+            if (selectedCat !== 'Все') list = list.filter(p => p.category === selectedCat);
             if (searchQ) {
                 const q = searchQ.toLowerCase();
                 list = list.filter(p => p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q));
             }
 
             if (!list.length) {
-                html += '<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p></div>';
+                html += '<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><p style="font-size:12px;color:var(--text2);margin-top:8px;">Нажмите 🛍️ для синхронизации</p></div>';
             } else {
                 list.forEach(p => {
                     const inCart = cart.find(c => c.id === p.id);
-                    const imgHtml = p.images && p.images.length > 0
-                        ? `<img src="${p.images[0]}" alt="${p.name}">`
-                        : (p.image || '📦');
+                    const imgHtml = p.images && p.images.length > 0 ? `<img src="${p.images[0]}" alt="${p.name}">` : (p.image || '📦');
                     html += `
                         <div class="product-card" onclick="openProduct(${p.id})">
                             <div class="product-img">${imgHtml}</div>
@@ -431,7 +372,6 @@
             `);
         }
 
-        // ===== КОРЗИНА =====
         function renderCartView(area) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             let html = '<h3 style="margin-bottom:10px;">🛒 Корзина</h3>';
@@ -457,15 +397,12 @@
         }
 
         function chQty(id,d) {
-            const i = cart.find(x=>x.id===id);
-            if (!i) return;
-            i.qty += d;
-            if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
+            const i = cart.find(x=>x.id===id); if (!i) return;
+            i.qty += d; if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
             if (i.qty > (i.stock||99)) i.qty = i.stock;
             saveData(); renderContent();
         }
 
-        // ===== ПРОФИЛЬ =====
         function renderProfile(area) {
             let html = `<h3 style="margin-bottom:10px;">👤 Профиль</h3>
                 <div class="confirm-box"><p>👤 <b>${user.first_name||'Пользователь'}</b></p><p>📎 @${user.username||'нет'}</p><p>📅 Заказов: ${orders.length}</p></div>
@@ -492,7 +429,6 @@
                 tg.sendData(JSON.stringify({action:'cancel_order',order_id:id})); }
         }
 
-        // ===== ОФОРМЛЕНИЕ =====
         function startCheckout() {
             if (!cart.length) { showToast('Корзина пуста'); return; }
             openModal(metroModal());
@@ -539,12 +475,10 @@
             cart=[]; saveData(); closeModal(); showToast('Заказ оформлен!'); renderContent();
         }
 
-        // ===== АДМИН-ПАНЕЛЬ =====
         function renderAdmin(area) {
             if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
             let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
 
-            // Заказы
             html += '<h4 style="margin:12px 0 6px;">📋 Заказы</h4>';
             if (!orders.length) html += '<p style="color:var(--text2);">Нет</p>';
             else orders.forEach(o => {
@@ -560,33 +494,22 @@
                 </div>`;
             });
 
-            // Категории
             html += '<h4 style="margin:12px 0 6px;">📂 Категории</h4>';
             html += '<div style="display:flex;gap:6px;margin-bottom:6px;"><input id="newCat" class="search-input" placeholder="Название" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;" onclick="addCat()">+</button></div>';
             categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span>${c.name}</span><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div></div>`);
 
-            // Добавить товар
-            html += '<h4 style="margin:12px 0 6px;">📦 Добавить товар</h4>';
-            html += `<input id="pn" class="search-input" placeholder="Название" style="margin-bottom:4px;">
-                <input id="pd" class="search-input" placeholder="Описание" style="margin-bottom:4px;">
-                <input id="pp" type="number" class="search-input" placeholder="Цена" style="margin-bottom:4px;">
-                <input id="ps" type="number" class="search-input" placeholder="Количество" style="margin-bottom:4px;">
-                <select id="pc" class="search-input" style="margin-bottom:4px;">${categories.filter(c=>c.av!==false).map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select>
-                <div class="upload-area" onclick="document.getElementById('imgUpload').click()">📷 Загрузить картинки (до 5)</div>
-                <input type="file" id="imgUpload" multiple accept="image/*" onchange="previewImages()" style="display:none;">
-                <div class="img-preview" id="imgPrev"></div>
-                <button class="btn-primary" onclick="addProduct()">➕ Добавить</button>`;
-
-            // Метро
             html += '<h4 style="margin:12px 0 6px;">🚇 Станции метро</h4>';
             metroData.forEach(line => {
                 html += `<p style="color:${line.color};font-weight:600;margin:6px 0 3px;">● ${line.line}</p>`;
                 line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;"><span>🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${line.line}','${s.name}')"></div></div>`);
             });
 
-            // Время
             html += '<h4 style="margin:12px 0 6px;">🕐 Время</h4>';
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span>🕐 ${t.range}</span><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div></div>`);
+
+            html += `<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4>
+                <button class="btn-primary" onclick="syncProducts()">🔄 Загрузить товары с сервера</button>
+                <button class="btn-secondary" onclick="localStorage.clear();sessionStorage.clear();location.reload();">🗑 Сбросить всё</button>`;
 
             area.innerHTML = html;
         }
@@ -601,40 +524,10 @@
         }
         function tgTime(id) { const t=timeSlots.find(x=>x.id===id); if(t){t.av=t.av===false?true:false;saveData();renderContent();} }
 
-        function previewImages() {
-            const files = document.getElementById('imgUpload').files;
-            tempImages = [];
-            const prev = document.getElementById('imgPrev');
-            prev.innerHTML = '';
-            for (let f of files) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    tempImages.push(e.target.result);
-                    prev.innerHTML += `<img src="${e.target.result}">`;
-                };
-                reader.readAsDataURL(f);
-            }
-        }
-
-        function addProduct() {
-            const name = document.getElementById('pn')?.value?.trim();
-            const desc = document.getElementById('pd')?.value?.trim();
-            const price = parseFloat(document.getElementById('pp')?.value||0);
-            const stock = parseInt(document.getElementById('ps')?.value||0);
-            const catId = parseInt(document.getElementById('pc')?.value||0);
-            if (name && price > 0) {
-                products.push({id:Date.now(),name,desc,price,stock,category_id:catId,av:true,images:tempImages.length?[...tempImages]:[],image:'📦'});
-                tempImages = [];
-                saveData(); renderContent(); showToast('Товар добавлен');
-            }
-        }
-
-        // ===== MODAL =====
         function openModal(html) { document.getElementById('modalBox').innerHTML=html; document.getElementById('modalOverlay').style.display='flex'; }
         function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
         function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 
-        // ===== INIT =====
         loadData(); checkAdmin(); renderContent();
     </script>
 </body>
