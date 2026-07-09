@@ -12,19 +12,24 @@
             --accent: #7c3aed; --accent2: #a855f7; --pink: #ec4899;
             --text: #fafafa; --text2: #a1a1aa; --green: #22c55e;
             --red: #ef4444; --gold: #f59e0b; --border: rgba(255,255,255,0.06);
+            --radius: 16px; --radius-sm: 10px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
             background: var(--bg); color: var(--text);
             min-height: 100dvh; overflow-x: hidden;
             -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
         body::before {
             content:''; position:fixed; top:-60%; left:-60%; width:220%; height:220%;
-            background: radial-gradient(ellipse at 25% 30%, rgba(124,58,237,0.04) 0%, transparent 55%),
-                        radial-gradient(ellipse at 75% 70%, rgba(236,72,153,0.03) 0%, transparent 55%);
-            animation: bgFloat 30s ease-in-out infinite; z-index:0; pointer-events:none;
+            background:
+                radial-gradient(ellipse at 25% 30%, rgba(124,58,237,0.04) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 70%, rgba(236,72,153,0.03) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 50%, rgba(168,85,247,0.02) 0%, transparent 70%);
+            animation: bgFloat 30s ease-in-out infinite;
+            z-index: 0; pointer-events: none;
         }
         @keyframes bgFloat {
             0%,100%{transform:translate(0,0) rotate(0deg)}
@@ -32,67 +37,74 @@
             50%{transform:translate(-1%,2%) rotate(-0.5deg)}
             75%{transform:translate(-2%,-0.5%) rotate(0.3deg)}
         }
-        .app { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:12px 14px 100px; }
+        .app { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:12px 14px 120px; }
         .header {
             display:flex; align-items:center; justify-content:space-between;
-            padding:6px 0 14px; position:sticky; top:0; z-index:50;
-            background:rgba(10,10,15,0.8); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+            padding:6px 0 16px; position:sticky; top:0; z-index:50;
+            background:rgba(10,10,15,0.75); backdrop-filter:blur(24px);
         }
-        .logo { font-size:20px; font-weight:900; color:var(--text); letter-spacing:-1px; }
+        .logo { font-size:24px; font-weight:900; background:linear-gradient(135deg, var(--accent2), var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-1px; }
         .header-actions { display:flex; gap:8px; }
         .icon-btn {
-            width:40px; height:40px; border-radius:12px; background:var(--card);
+            width:42px; height:42px; border-radius:13px; background:var(--card);
             border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
             cursor:pointer; font-size:18px; position:relative; transition:all 0.2s; color:var(--text);
         }
         .icon-btn:active { transform:scale(0.9); background:var(--card2); }
         .badge {
-            position:absolute; top:-5px; right:-5px; background:var(--accent); color:white;
-            min-width:18px; height:18px; border-radius:9px; font-size:10px; font-weight:700;
-            display:flex; align-items:center; justify-content:center; padding:0 4px;
+            position:absolute; top:-6px; right:-6px; background:var(--accent); color:white;
+            min-width:20px; height:20px; border-radius:10px; font-size:11px; font-weight:700;
+            display:flex; align-items:center; justify-content:center; padding:0 5px;
+            box-shadow:0 2px 8px rgba(124,58,237,0.5);
         }
-        .search-wrap { display:flex; gap:8px; margin-bottom:12px; }
-        .search-input, .admin-input {
-            flex:1; padding:12px 14px; border-radius:14px; background:var(--card);
-            border:2px solid var(--border); color:var(--text); font-size:14px; outline:none; transition:all 0.3s;
+        .search-wrap { display:flex; gap:8px; margin-bottom:14px; }
+        .search-input {
+            flex:1; padding:13px 16px; border-radius:var(--radius); background:var(--card);
+            border:2px solid var(--border); color:var(--text); font-size:15px; transition:all 0.3s; outline:none;
         }
-        .admin-input { margin-bottom:6px; }
-        .search-input:focus, .admin-input:focus { border-color:var(--accent); }
-        .search-input::placeholder, .admin-input::placeholder { color:#52525b; }
-        .admin-select {
-            width:100%; padding:12px 14px; border-radius:14px; background:var(--card);
-            border:2px solid var(--border); color:var(--text); font-size:14px; outline:none; margin-bottom:6px;
+        .search-input:focus { border-color:var(--accent); box-shadow:0 0 20px rgba(124,58,237,0.1); }
+        .search-input::placeholder { color:#52525b; }
+        .search-btn {
+            width:48px; height:48px; border-radius:var(--radius);
+            background:linear-gradient(135deg, var(--accent), var(--accent2));
+            border:none; color:white; font-size:20px; cursor:pointer; flex-shrink:0; transition:all 0.2s;
         }
+        .search-btn:active { transform:scale(0.9); opacity:0.85; }
         .categories {
-            display:flex; gap:7px; overflow-x:auto; padding:2px 0 12px;
-            scrollbar-width:none; -ms-overflow-style:none;
+            display:flex; gap:8px; overflow-x:auto; padding:2px 0 14px; margin-bottom:6px;
+            scrollbar-width:none;
         }
         .categories::-webkit-scrollbar { display:none; }
         .chip {
-            padding:8px 15px; border-radius:11px; background:var(--card); border:1px solid var(--border);
-            white-space:nowrap; font-size:12px; cursor:pointer; transition:all 0.2s; color:var(--text2); flex-shrink:0;
+            padding:9px 17px; border-radius:12px; background:var(--card); border:1px solid var(--border);
+            white-space:nowrap; font-size:13px; font-weight:500; cursor:pointer;
+            transition:all 0.25s; color:var(--text2); flex-shrink:0;
         }
-        .chip.active { background:var(--accent); border-color:var(--accent); color:white; font-weight:600; }
-        .products-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .chip.active {
+            background:var(--accent); border-color:var(--accent); color:white; font-weight:600;
+            box-shadow:0 4px 16px rgba(124,58,237,0.35);
+        }
+        .products-grid { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
         .product-card {
-            background:var(--card); border-radius:16px; padding:12px; border:1px solid var(--border);
-            cursor:pointer; transition:all 0.2s;
+            background:var(--card); border-radius:18px; padding:13px; border:1px solid var(--border);
+            cursor:pointer; transition:all 0.25s; position:relative; overflow:hidden;
         }
-        .product-card:active { transform:scale(0.96); background:var(--card2); }
+        .product-card:active { transform:scale(0.95); background:var(--card2); }
         .product-img {
-            width:100%; aspect-ratio:1; border-radius:12px; display:flex; align-items:center;
-            justify-content:center; font-size:44px; margin-bottom:8px; position:relative;
-            background:linear-gradient(145deg, #1e1e2e 0%, #16162a 100%); overflow:hidden;
+            width:100%; aspect-ratio:1;
+            background:linear-gradient(145deg, #1e1e2e 0%, #16162a 100%);
+            border-radius:14px; display:flex; align-items:center; justify-content:center;
+            font-size:48px; margin-bottom:10px; position:relative; overflow:hidden;
         }
-        .product-img img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
-        .product-name { font-size:13px; font-weight:600; margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-        .product-desc { font-size:11px; color:var(--text2); margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+        .product-img img { width:100%; height:100%; object-fit:cover; border-radius:14px; }
+        .product-name { font-size:13px; font-weight:600; margin-bottom:3px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .product-desc { font-size:11px; color:var(--text2); margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .product-bottom { display:flex; align-items:center; justify-content:space-between; }
-        .price { font-size:14px; font-weight:700; color:var(--accent2); }
+        .price { font-size:15px; font-weight:700; color:var(--accent2); }
         .btn-add {
-            width:30px; height:30px; border-radius:9px;
+            width:32px; height:32px; border-radius:var(--radius-sm);
             background:linear-gradient(135deg, var(--accent), var(--accent2));
-            border:none; color:white; font-size:16px; cursor:pointer; transition:all 0.2s;
+            border:none; color:white; font-size:18px; cursor:pointer; transition:all 0.2s;
             display:flex; align-items:center; justify-content:center; flex-shrink:0;
         }
         .btn-add:active { transform:scale(0.85); }
@@ -103,73 +115,122 @@
         }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .modal {
-            background:var(--card); border-radius:20px 20px 0 0; width:100%; max-width:480px;
-            max-height:85dvh; overflow-y:auto; padding:24px 16px 16px; position:relative;
-            animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+            background:var(--card); border-radius:22px 22px 0 0; width:100%; max-width:480px;
+            max-height:85dvh; overflow-y:auto; padding:24px 18px 18px; position:relative;
+            animation:slideUp 0.35s cubic-bezier(0.16,1,0.3,1);
         }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-        .modal-handle { width:36px; height:4px; background:#3a3a45; border-radius:2px; margin:0 auto 14px; }
+        .modal-handle { width:36px; height:5px; background:#3a3a45; border-radius:3px; margin:0 auto 16px; }
         .modal-close {
-            position:absolute; top:12px; right:12px; width:30px; height:30px;
+            position:absolute; top:14px; right:14px; width:32px; height:32px;
             border-radius:50%; background:#25252f; border:none; color:white; font-size:14px;
             cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;
         }
-        .modal-title { font-size:18px; font-weight:700; margin-bottom:14px; }
-        .cart-item, .option-card {
-            display:flex; align-items:center; gap:10px; padding:12px;
-            background:var(--card2); border-radius:12px; margin-bottom:6px; cursor:pointer; transition:all 0.2s;
+        .modal-title { font-size:19px; font-weight:700; margin-bottom:16px; }
+        .cart-item {
+            display:flex; align-items:center; gap:12px; padding:12px;
+            background:var(--card2); border-radius:14px; margin-bottom:8px;
+        }
+        .cart-img {
+            width:46px; height:46px; border-radius:11px; background:#1e1e2e;
+            display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; overflow:hidden;
+        }
+        .cart-img img { width:100%; height:100%; object-fit:cover; border-radius:11px; }
+        .cart-info { flex:1; min-width:0; }
+        .cart-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cart-price { font-size:12px; color:var(--accent2); }
+        .qty-group { display:flex; align-items:center; gap:6px; }
+        .qty-btn {
+            width:28px; height:28px; border-radius:8px; background:#2a2a35; border:none;
+            color:white; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+        }
+        .qty-btn:active { background:#3a3a45; }
+        .qty-val { font-weight:700; width:18px; text-align:center; font-size:14px; }
+        .btn-primary {
+            width:100%; padding:15px; border-radius:var(--radius);
+            background:linear-gradient(135deg, var(--accent), var(--accent2));
+            border:none; color:white; font-size:15px; font-weight:700; cursor:pointer;
+            transition:all 0.2s; margin-top:8px; letter-spacing:-0.2px;
+        }
+        .btn-primary:active { transform:scale(0.96); opacity:0.85; }
+        .btn-secondary {
+            width:100%; padding:13px; border-radius:var(--radius); background:var(--card2);
+            border:1px solid var(--border); color:var(--text); font-size:14px; cursor:pointer; margin-top:8px;
+        }
+        .btn-secondary:active { background:#252535; }
+        .btn-danger { background:var(--red)!important; }
+        .total-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:16px 0; border-top:1px solid #1e1e2e; margin-top:8px;
+        }
+        .total-label { font-size:15px; color:var(--text2); }
+        .total-val {
+            font-size:22px; font-weight:800;
+            background:linear-gradient(135deg, var(--accent2), var(--pink));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .empty-state { text-align:center; padding:40px 20px; color:var(--text2); grid-column:1/-1; }
+        .empty-icon { font-size:56px; margin-bottom:12px; }
+        .option-card {
+            display:flex; align-items:center; gap:12px; padding:14px;
+            background:var(--card2); border-radius:14px; margin-bottom:8px;
+            cursor:pointer; transition:all 0.2s;
         }
         .option-card:active { background:#252535; }
-        .cart-img {
-            width:42px; height:42px; border-radius:10px; background:#1e1e2e;
-            display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; overflow:hidden;
-        }
-        .cart-img img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
-        .cart-info { flex:1; min-width:0; }
-        .cart-name { font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .cart-price { font-size:11px; color:var(--accent2); }
-        .qty-group { display:flex; align-items:center; gap:5px; }
-        .qty-btn {
-            width:26px; height:26px; border-radius:7px; background:#2a2a35; border:none;
-            color:white; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;
-        }
-        .btn-primary {
-            width:100%; padding:14px; border-radius:14px;
-            background:linear-gradient(135deg, var(--accent), var(--accent2));
-            border:none; color:white; font-size:14px; font-weight:700; cursor:pointer; margin-top:6px;
-        }
-        .btn-primary:active { transform:scale(0.97); opacity:0.85; }
-        .btn-secondary {
-            width:100%; padding:12px; border-radius:14px; background:var(--card2);
-            border:1px solid var(--border); color:var(--text); font-size:13px; cursor:pointer; margin-top:6px;
-        }
-        .btn-danger { background:var(--red) !important; }
-        .total-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-top:1px solid #1e1e2e; margin-top:6px; }
-        .total-val { font-size:20px; font-weight:800; color:var(--accent2); }
-        .toggle { width:44px; height:24px; border-radius:12px; background:#3a3a45; position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0; }
-        .toggle.on { background:var(--accent); }
-        .toggle::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:white; transition:all 0.2s; }
-        .toggle.on::after { left:22px; }
-        .empty-state { text-align:center; padding:40px 20px; color:var(--text2); grid-column:1/-1; }
-        .empty-icon { font-size:48px; margin-bottom:10px; }
-        .confirm-box { background:var(--card2); padding:14px; border-radius:12px; margin-bottom:10px; line-height:1.8; font-size:13px; }
-        .toast {
-            position:fixed; top:16px; left:50%; transform:translateX(-50%);
-            background:var(--green); color:white; padding:8px 20px; border-radius:24px;
-            font-weight:600; font-size:13px; z-index:999;
-            animation:toastIn 0.3s, toastOut 0.3s 1.5s forwards;
-        }
-        @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        @keyframes toastOut { from{opacity:1} to{opacity:0} }
-        ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-thumb { background:#2a2a35; border-radius:2px; }
         .option-card.disabled { opacity:0.4; pointer-events:none; }
+        .option-arrow { color:var(--accent2); margin-left:auto; font-size:18px; }
+        .confirm-box {
+            background:var(--card2); padding:16px; border-radius:14px;
+            margin-bottom:12px; line-height:1.9; font-size:14px;
+        }
+        .toast {
+            position:fixed; top:20px; left:50%; transform:translateX(-50%);
+            background:var(--green); color:white; padding:10px 24px; border-radius:30px;
+            font-weight:600; font-size:14px; z-index:999;
+            animation:toastIn 0.3s ease-out, toastOut 0.3s 1.7s ease-in forwards;
+            box-shadow:0 8px 24px rgba(34,197,94,0.3);
+        }
+        @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+        @keyframes toastOut { from{opacity:1} to{opacity:0} }
+        .toggle {
+            width:44px; height:24px; border-radius:12px; background:#3a3a45;
+            position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0;
+        }
+        .toggle.on { background:var(--accent); }
+        .toggle::after {
+            content:''; position:absolute; top:2px; left:2px; width:20px; height:20px;
+            border-radius:50%; background:white; transition:all 0.2s;
+        }
+        .toggle.on::after { left:22px; }
         .sync-btn {
             position:fixed; bottom:20px; right:20px; z-index:300;
             width:50px; height:50px; border-radius:50%; background:var(--accent);
-            border:none; color:white; font-size:22px; cursor:pointer; box-shadow:0 4px 20px rgba(124,58,237,0.5);
+            border:none; color:white; font-size:22px; cursor:pointer;
+            box-shadow:0 4px 20px rgba(124,58,237,0.5);
             display:flex; align-items:center; justify-content:center;
         }
         .sync-btn:active { transform:scale(0.9); }
+        .upload-area {
+            border:2px dashed var(--border); border-radius:12px; padding:16px;
+            text-align:center; cursor:pointer; margin-bottom:8px; transition:all 0.2s;
+        }
+        .upload-area:active { border-color:var(--accent); background:var(--card2); }
+        .upload-area input { display:none; }
+        .img-preview { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+        .img-preview img { width:60px; height:60px; border-radius:8px; object-fit:cover; }
+        .admin-input {
+            width:100%; padding:12px 14px; border-radius:14px; background:var(--card);
+            border:2px solid var(--border); color:var(--text); font-size:14px; outline:none;
+            margin-bottom:6px; transition:all 0.3s;
+        }
+        .admin-input:focus { border-color:var(--accent); }
+        .admin-select {
+            width:100%; padding:12px 14px; border-radius:14px; background:var(--card);
+            border:2px solid var(--border); color:var(--text); font-size:14px; outline:none; margin-bottom:6px;
+        }
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#2a2a35; border-radius:2px; }
     </style>
 </head>
 <body>
@@ -178,14 +239,16 @@
             <div class="logo">Helgirll Test</div>
             <div class="header-actions">
                 <div class="icon-btn" onclick="switchView('catalog')">🛍️</div>
-                <div class="icon-btn" onclick="switchView('cart')">🛒<span class="badge" id="cartBadge">0</span></div>
+                <div class="icon-btn" onclick="switchView('cart')">
+                    🛒<span class="badge" id="cartBadge">0</span>
+                </div>
                 <div class="icon-btn" onclick="switchView('profile')">👤</div>
                 <div class="icon-btn" id="adminBtn" style="display:none" onclick="switchView('admin')">⚙️</div>
             </div>
         </div>
         <div id="contentArea"></div>
     </div>
-    <button class="sync-btn" onclick="loadProductsFromAPI()">🔄</button>
+    <button class="sync-btn" onclick="syncFromBot()">🔄</button>
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
         <div class="modal" id="modalBox"></div>
@@ -196,131 +259,127 @@
         tg.expand(); tg.ready(); tg.MainButton.hide(); tg.enableClosingConfirmation();
         const user = tg.initDataUnsafe?.user || {};
         const isAdmin = user.username === 'helgirll';
-        const API_URL = 'http://194.77.71.245:5000/api';
 
+        // ============ ДАННЫЕ ============
         let products = [];
-        let categories = [];
         let cart = [];
+        let orders = [];
         let selectedCat = 'Все';
         let searchQ = '';
         let currentView = 'catalog';
-        let orders = [];
+        let tempImages = [];
 
-        const defaultMetro = [
+        const categories = [
+            {id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true},
+            {id:3,name:'Наушники',av:true},{id:4,name:'Игры',av:true},
+            {id:5,name:'Планшеты',av:true},{id:6,name:'Часы',av:true},{id:7,name:'Техника',av:true}
+        ];
+
+        const metroData = [
             {line:'Кировско-Выборгская',color:'#D32F2F',stations:[
-                {name:'Девяткино',av:true},{name:'Гражданский проспект',av:true},{name:'Академическая',av:true},{name:'Политехническая',av:true},{name:'Площадь Мужества',av:true},{name:'Лесная',av:true},{name:'Выборгская',av:true},{name:'Площадь Ленина',av:true},{name:'Чернышевская',av:true},{name:'Площадь Восстания',av:true},{name:'Владимирская',av:true},{name:'Пушкинская',av:true},{name:'Технологический институт',av:true},{name:'Балтийская',av:true},{name:'Нарвская',av:true},{name:'Кировский завод',av:true},{name:'Автово',av:true},{name:'Ленинский проспект',av:true},{name:'Проспект Ветеранов',av:true}
+                {name:'Девяткино',av:true},{name:'Гражданский проспект',av:true},{name:'Академическая',av:true},
+                {name:'Политехническая',av:true},{name:'Площадь Мужества',av:true},{name:'Лесная',av:true},
+                {name:'Выборгская',av:true},{name:'Площадь Ленина',av:true},{name:'Чернышевская',av:true},
+                {name:'Площадь Восстания',av:true},{name:'Владимирская',av:true},{name:'Пушкинская',av:true},
+                {name:'Технологический институт',av:true},{name:'Балтийская',av:true},{name:'Нарвская',av:true},
+                {name:'Кировский завод',av:true},{name:'Автово',av:true},{name:'Ленинский проспект',av:true},
+                {name:'Проспект Ветеранов',av:true}
             ]},
             {line:'Московско-Петроградская',color:'#1976D2',stations:[
-                {name:'Парнас',av:true},{name:'Проспект Просвещения',av:true},{name:'Озерки',av:true},{name:'Удельная',av:true},{name:'Пионерская',av:true},{name:'Чёрная речка',av:true},{name:'Петроградская',av:true},{name:'Горьковская',av:true},{name:'Невский проспект',av:true},{name:'Сенная площадь',av:true},{name:'Технологический институт',av:true},{name:'Фрунзенская',av:true},{name:'Московские ворота',av:true},{name:'Электросила',av:true},{name:'Парк Победы',av:true},{name:'Московская',av:true},{name:'Звёздная',av:true},{name:'Купчино',av:true}
+                {name:'Парнас',av:true},{name:'Проспект Просвещения',av:true},{name:'Озерки',av:true},
+                {name:'Удельная',av:true},{name:'Пионерская',av:true},{name:'Чёрная речка',av:true},
+                {name:'Петроградская',av:true},{name:'Горьковская',av:true},{name:'Невский проспект',av:true},
+                {name:'Сенная площадь',av:true},{name:'Технологический институт',av:true},{name:'Фрунзенская',av:true},
+                {name:'Московские ворота',av:true},{name:'Электросила',av:true},{name:'Парк Победы',av:true},
+                {name:'Московская',av:true},{name:'Звёздная',av:true},{name:'Купчино',av:true}
             ]},
             {line:'Невско-Василеостровская',color:'#388E3C',stations:[
-                {name:'Беговая',av:true},{name:'Зенит',av:true},{name:'Приморская',av:true},{name:'Василеостровская',av:true},{name:'Гостиный двор',av:true},{name:'Маяковская',av:true},{name:'Пл. Александра Невского',av:true},{name:'Елизаровская',av:true},{name:'Ломоносовская',av:true},{name:'Пролетарская',av:true},{name:'Обухово',av:true},{name:'Рыбацкое',av:true}
+                {name:'Беговая',av:true},{name:'Зенит',av:true},{name:'Приморская',av:true},
+                {name:'Василеостровская',av:true},{name:'Гостиный двор',av:true},{name:'Маяковская',av:true},
+                {name:'Пл.Александра Невского',av:true},{name:'Елизаровская',av:true},{name:'Ломоносовская',av:true},
+                {name:'Пролетарская',av:true},{name:'Обухово',av:true},{name:'Рыбацкое',av:true}
             ]},
             {line:'Правобережная',color:'#F57C00',stations:[
-                {name:'Спасская',av:true},{name:'Достоевская',av:true},{name:'Лиговский проспект',av:true},{name:'Пл. Александра Невского',av:true},{name:'Новочеркасская',av:true},{name:'Ладожская',av:true},{name:'Пр. Большевиков',av:true},{name:'Улица Дыбенко',av:true}
+                {name:'Спасская',av:true},{name:'Достоевская',av:true},{name:'Лиговский проспект',av:true},
+                {name:'Пл.Александра Невского',av:true},{name:'Новочеркасская',av:true},{name:'Ладожская',av:true},
+                {name:'Пр.Большевиков',av:true},{name:'Улица Дыбенко',av:true}
             ]},
             {line:'Фрунзенско-Приморская',color:'#7B1FA2',stations:[
-                {name:'Комендантский проспект',av:true},{name:'Старая Деревня',av:true},{name:'Крестовский остров',av:true},{name:'Чкаловская',av:true},{name:'Спортивная',av:true},{name:'Адмиралтейская',av:true},{name:'Садовая',av:true},{name:'Звенигородская',av:true},{name:'Обводный канал',av:true},{name:'Волковская',av:true},{name:'Бухарестская',av:true},{name:'Международная',av:true},{name:'Проспект Славы',av:true},{name:'Дунайская',av:true},{name:'Шушары',av:true}
+                {name:'Комендантский проспект',av:true},{name:'Старая Деревня',av:true},{name:'Крестовский остров',av:true},
+                {name:'Чкаловская',av:true},{name:'Спортивная',av:true},{name:'Адмиралтейская',av:true},
+                {name:'Садовая',av:true},{name:'Звенигородская',av:true},{name:'Обводный канал',av:true},
+                {name:'Волковская',av:true},{name:'Бухарестская',av:true},{name:'Международная',av:true},
+                {name:'Проспект Славы',av:true},{name:'Дунайская',av:true},{name:'Шушары',av:true}
             ]}
         ];
 
-        let metroData = [];
-        let timeSlots = [
+        const timeSlots = [
             {id:1,range:'10:00 – 12:00',av:true},{id:2,range:'12:00 – 14:00',av:true},
-            {id:3,range:'14:00 – 16:00',av:true},{id:4,range:'16:00 – 18:00',av:true},{id:5,range:'18:00 – 20:00',av:true}
+            {id:3,range:'14:00 – 16:00',av:true},{id:4,range:'16:00 – 18:00',av:true},
+            {id:5,range:'18:00 – 20:00',av:true}
         ];
 
-        // ===== API =====
-        async function loadProductsFromAPI() {
-            try {
-                showToast('Загрузка...');
-                const resp = await fetch(`${API_URL}/products`);
-                const data = await resp.json();
-                products = data;
-                sessionStorage.setItem('hg_products', JSON.stringify(products));
-                renderContent();
-                showToast(`Загружено ${data.length} товаров`);
-            } catch(e) {
-                showToast('Ошибка загрузки');
-                const sp = sessionStorage.getItem('hg_products');
-                if (sp) products = JSON.parse(sp);
-                renderContent();
-            }
+        // ============ СОХРАНЕНИЕ ============
+        function saveData() {
+            try { localStorage.setItem('hg_shop', JSON.stringify({cart,orders})); } catch(e) {}
+            try { sessionStorage.setItem('hg_products', JSON.stringify(products)); } catch(e) {}
         }
-
-        async function addProductAPI(name, desc, price, stock, category) {
-            try {
-                const resp = await fetch(`${API_URL}/products`, {
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({name, desc, price, stock, category, images:[]})
-                });
-                if (resp.ok) { showToast('Добавлен!'); await loadProductsFromAPI(); }
-            } catch(e) { showToast('Ошибка'); }
-        }
-
-        async function deleteProductAPI(id) {
-            try {
-                await fetch(`${API_URL}/products/${id}`, {method:'DELETE'});
-                showToast('Удалён');
-                await loadProductsFromAPI();
-            } catch(e) { showToast('Ошибка'); }
-        }
-
-        // ===== LOCAL =====
         function loadData() {
             try {
-                const saved = localStorage.getItem('hg_data');
-                if (saved) {
-                    const d = JSON.parse(saved);
-                    categories = d.categories || [];
-                    cart = d.cart || [];
-                    orders = d.orders || [];
-                    metroData = d.metroData || JSON.parse(JSON.stringify(defaultMetro));
-                    timeSlots = d.timeSlots || timeSlots;
-                } else {
-                    categories = [
-                        {id:1,name:'Телефоны',av:true},{id:2,name:'Ноутбуки',av:true},{id:3,name:'Наушники',av:true},
-                        {id:4,name:'Игры',av:true},{id:5,name:'Планшеты',av:true},{id:6,name:'Часы',av:true},{id:7,name:'Техника',av:true}
-                    ];
-                    metroData = JSON.parse(JSON.stringify(defaultMetro));
-                }
-                const sp = sessionStorage.getItem('hg_products');
-                if (sp) products = JSON.parse(sp);
+                const d = JSON.parse(localStorage.getItem('hg_shop'));
+                if (d) { cart = d.cart || []; orders = d.orders || []; }
+                const p = sessionStorage.getItem('hg_products');
+                if (p) products = JSON.parse(p);
             } catch(e) {}
         }
 
-        function saveData() {
-            try { localStorage.setItem('hg_data', JSON.stringify({categories, cart, orders, metroData, timeSlots})); } catch(e) {}
+        // ============ СИНХРОНИЗАЦИЯ С БОТОМ ============
+        function syncFromBot() {
+            tg.sendData(JSON.stringify({action:'get_products'}));
+            showToast('Синхронизация...');
+        }
+        function addProductToBot(name, desc, price, stock, category) {
+            tg.sendData(JSON.stringify({action:'add_product', name, desc, price, stock, category}));
+            showToast('Товар отправлен на сервер');
+            setTimeout(syncFromBot, 1500);
+        }
+        function deleteProductFromBot(id) {
+            tg.sendData(JSON.stringify({action:'delete_product', id}));
+            showToast('Товар удалён');
+            setTimeout(syncFromBot, 1500);
         }
 
-        function checkAdmin() { if (isAdmin) document.getElementById('adminBtn').style.display = 'flex'; }
-        function switchView(view) { currentView = view; renderContent(); }
-        function showToast(text) {
-            const t = document.createElement('div'); t.className = 'toast'; t.textContent = text;
-            document.getElementById('toastContainer').appendChild(t);
-            setTimeout(() => t.remove(), 1800);
+        // ============ UI ============
+        function checkAdmin() { if(isAdmin) document.getElementById('adminBtn').style.display='flex'; }
+        function switchView(v) { currentView=v; renderContent(); }
+        function showToast(t) {
+            const d = document.createElement('div'); d.className='toast'; d.textContent=t;
+            document.getElementById('toastContainer').appendChild(d);
+            setTimeout(()=>d.remove(), 1800);
         }
-        function updateBadge() { document.getElementById('cartBadge').textContent = cart.reduce((s,i)=>s+i.qty,0); }
+        function updateBadge() {
+            document.getElementById('cartBadge').textContent = cart.reduce((s,i)=>s+i.qty,0);
+        }
 
         function renderContent() {
             const area = document.getElementById('contentArea');
             switch(currentView) {
                 case 'catalog': renderCatalog(area); break;
-                case 'cart': renderCartView(area); break;
+                case 'cart': renderCart(area); break;
                 case 'profile': renderProfile(area); break;
                 case 'admin': renderAdmin(area); break;
             }
             updateBadge();
         }
 
+        // ============ КАТАЛОГ ============
         function renderCatalog(area) {
-            const activeCats = categories.filter(c => c.av !== false);
-            let html = `
-                <div class="search-wrap"><input type="text" class="search-input" placeholder="🔍 Поиск..." value="${searchQ}" oninput="searchQ=this.value;renderContent()"></div>
+            let html = `<div class="search-wrap">
+                    <input type="text" class="search-input" placeholder="🔍 Поиск товаров..." value="${searchQ}" oninput="searchQ=this.value;renderContent()">
+                </div>
                 <div class="categories">
                     <div class="chip${selectedCat==='Все'?' active':''}" onclick="selectedCat='Все';renderContent()">Все</div>
-                    ${activeCats.map(c => `<div class="chip${selectedCat===c.name?' active':''}" onclick="selectedCat='${c.name}';renderContent()">${c.name}</div>`).join('')}
+                    ${categories.filter(c=>c.av).map(c=>`<div class="chip${selectedCat===c.name?' active':''}" onclick="selectedCat='${c.name}';renderContent()">${c.name}</div>`).join('')}
                 </div>
                 <div class="products-grid">`;
 
@@ -332,7 +391,7 @@
             }
 
             if (!list.length) {
-                html += `<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="loadProductsFromAPI()">🔄 Загрузить с сервера</button></div>`;
+                html += `<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncFromBot()">🔄 Загрузить с сервера</button></div>`;
             } else {
                 list.forEach(p => {
                     const inCart = cart.find(c => c.id === p.id);
@@ -365,123 +424,349 @@
             const p = products.find(x=>x.id===id);
             if (!p) return;
             openModal(`
-                <div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
-                <div style="font-size:64px;text-align:center;padding:20px;">${p.image||'📦'}</div>
-                <h2 style="font-size:18px;margin:8px 0;">${p.name}</h2>
-                <p style="color:#a1a1aa;margin-bottom:10px;">${p.desc||''}</p>
-                <span style="background:#1e1e2e;padding:5px 10px;border-radius:7px;font-size:11px;">📦 ${p.stock > 0 ? p.stock+' шт.' : 'Нет'}</span>
-                <div style="font-size:24px;font-weight:800;color:#a855f7;margin:10px 0;">${(p.price||0).toLocaleString('ru-RU')} ₽</div>
-                ${p.stock > 0 ? `<button class="btn-primary" onclick="addCart(${p.id});closeModal();">🛒 В корзину</button>` : '<button class="btn-primary" style="background:#3a3a3a;" disabled>Нет в наличии</button>'}
+                <div class="modal-handle"></div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div style="text-align:center;font-size:80px;margin:12px 0;">${p.image||'📦'}</div>
+                <h2 style="font-size:20px;margin-bottom:4px;">${p.name}</h2>
+                <p style="color:#a1a1aa;margin-bottom:12px;">${p.desc||''}</p>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+                    <span style="background:#1e1e2e;padding:6px 12px;border-radius:8px;font-size:12px;">📦 ${p.stock > 0 ? p.stock+' шт.' : 'Нет'}</span>
+                </div>
+                <div style="font-size:26px;font-weight:800;color:#a855f7;margin-bottom:16px;">${(p.price||0).toLocaleString('ru-RU')} ₽</div>
+                ${p.stock > 0 ? `<button class="btn-primary" onclick="addCart(${p.id});closeModal();">🛒 В корзину</button>` : '<button class="btn-primary" style="background:#3a3a3a;cursor:not-allowed;" disabled>Нет в наличии</button>'}
             `);
         }
 
-        function renderCartView(area) {
+        // ============ КОРЗИНА ============
+        function renderCart(area) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
-            let html = '<h3 style="margin-bottom:10px;">🛒 Корзина</h3>';
+            let html = '<h3 style="margin-bottom:12px;">🛒 Корзина</h3>';
             if (!cart.length) {
-                html += '<div class="empty-state"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
+                html += '<div class="empty-state"><div class="empty-icon">🛒</div><p>Корзина пуста</p></div>';
             } else {
                 html += cart.map(i => `
-                    <div class="cart-item"><div class="cart-img">${i.image||'📦'}</div>
-                        <div class="cart-info"><div class="cart-name">${i.name}</div><div class="cart-price">${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</div></div>
-                        <div class="qty-group"><button class="qty-btn" onclick="chQty(${i.id},-1)">−</button><span>${i.qty}</span><button class="qty-btn" onclick="chQty(${i.id},1)">+</button></div>
+                    <div class="cart-item">
+                        <div class="cart-img">${i.image||'📦'}</div>
+                        <div class="cart-info">
+                            <div class="cart-name">${i.name}</div>
+                            <div class="cart-price">${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</div>
+                        </div>
+                        <div class="qty-group">
+                            <button class="qty-btn" onclick="chQty(${i.id},-1)">−</button>
+                            <span class="qty-val">${i.qty}</span>
+                            <button class="qty-btn" onclick="chQty(${i.id},1)">+</button>
+                        </div>
                     </div>`).join('');
-                html += `<div class="total-row"><span>Итого:</span><span class="total-val">${total.toLocaleString('ru-RU')} ₽</span></div>
-                    <button class="btn-primary" onclick="startCheckout()">📋 Оформить</button>
-                    <button class="btn-secondary" onclick="cart=[];saveData();renderContent();">🗑 Очистить</button>`;
+                html += `
+                    <div class="total-row">
+                        <span class="total-label">Итого:</span>
+                        <span class="total-val">${total.toLocaleString('ru-RU')} ₽</span>
+                    </div>
+                    <button class="btn-primary" onclick="startCheckout()">📋 Оформить заказ</button>
+                    <button class="btn-secondary" onclick="cart=[];saveData();renderContent();">🗑 Очистить корзину</button>
+                `;
             }
             area.innerHTML = html;
         }
 
-        function chQty(id,d) {
-            const i = cart.find(x=>x.id===id); if (!i) return;
-            i.qty += d; if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
-            if (i.qty > (i.stock||99)) i.qty = i.stock;
+        function chQty(id, d) {
+            const item = cart.find(x=>x.id===id);
+            if (!item) return;
+            item.qty += d;
+            if (item.qty <= 0) cart = cart.filter(x=>x.id!==id);
+            if (item.qty > (item.stock||99)) item.qty = item.stock;
             saveData(); renderContent();
         }
 
+        // ============ ПРОФИЛЬ ============
         function renderProfile(area) {
-            let html = `<h3 style="margin-bottom:10px;">👤 Профиль</h3><div class="confirm-box"><p>👤 <b>${user.first_name||'Пользователь'}</b></p><p>📎 @${user.username||'нет'}</p></div>
-                <h4 style="margin:12px 0 6px;">📋 Заказы</h4>`;
-            if (!orders.length) html += '<p style="color:var(--text2);">Нет</p>';
-            else orders.forEach(o => html += `<div class="option-card" style="flex-direction:column;"><b>#${o.id.toString().slice(-6)}</b> | ${(o.total||0).toLocaleString('ru-RU')} ₽ | ${o.metro||'—'}</div>`);
+            let html = `<h3 style="margin-bottom:12px;">👤 Профиль</h3>
+                <div class="confirm-box">
+                    <p>👤 <b>${user.first_name||'Пользователь'}</b></p>
+                    <p>📎 @${user.username||'нет'}</p>
+                    <p>📅 Заказов: ${orders.length}</p>
+                </div>
+                <h4 style="margin:16px 0 8px;">📋 История заказов</h4>`;
+            if (!orders.length) {
+                html += '<p style="color:var(--text2);">Нет заказов</p>';
+            } else {
+                orders.forEach(o => {
+                    const sm = {pending:'⏳ Ожидает',confirmed:'✅ Подтверждён',completed:'🎉 Выполнен',cancelled:'❌ Отменён'};
+                    const itemsText = (o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');
+                    html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
+                        <div style="display:flex;justify-content:space-between;width:100%;">
+                            <b>Заказ #${o.id.toString().slice(-6)}</b>
+                            <span>${sm[o.status]||o.status}</span>
+                        </div>
+                        <p style="font-size:12px;color:var(--text2);">${itemsText}</p>
+                        <p style="font-size:12px;">💰 ${(o.total||0).toLocaleString('ru-RU')} ₽ | 📍 ${o.metro||'—'}</p>
+                        ${o.canEdit && o.status==='pending' ? `<button class="btn-secondary" style="margin-top:8px;" onclick="cancelOrder(${o.id})">❌ Отменить</button>` : ''}
+                    </div>`;
+                });
+            }
             area.innerHTML = html;
         }
 
+        function cancelOrder(id) {
+            const o = orders.find(x=>x.id===id);
+            if (o) { o.status='cancelled'; saveData(); showToast('Заказ отменён'); renderContent(); }
+        }
+
+        // ============ ОФОРМЛЕНИЕ ============
         function startCheckout() {
             if (!cart.length) { showToast('Корзина пуста'); return; }
             openModal(metroModal());
         }
 
         function metroModal() {
-            let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📍 Выберите метро (СПб)</div>';
+            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
+                <div class="modal-title">📍 Выберите станцию метро (СПб)</div>
+                <p style="color:#a1a1aa;margin-bottom:10px;font-size:13px;">Для самовывоза</p>`;
             metroData.forEach(line => {
-                html += `<p style="color:${line.color};font-weight:600;margin:8px 0 4px;">● ${line.line}</p>`;
-                line.stations.forEach(s => html += `<div class="option-card${!s.av?' disabled':''}" onclick="${s.av?`pickMetro('${s.name}')`:''}"><span>🚇 ${s.name}</span>${s.av?'<span style="color:#a855f7;">→</span>':'<span style="color:#ef4444;">нет</span>'}</div>`);
+                html += `<p style="color:${line.color};font-weight:600;margin:10px 0 6px;font-size:14px;">● ${line.line}</p>`;
+                line.stations.forEach(s => {
+                    html += `<div class="option-card${!s.av?' disabled':''}" onclick="${s.av?`pickMetro('${s.name}')`:''}">
+                        <span style="font-size:18px;">🚇</span><span>${s.name}</span>
+                        ${s.av?'<span class="option-arrow">→</span>':'<span style="color:#ef4444;font-size:11px;">недоступна</span>'}
+                    </div>`;
+                });
             });
             return html;
         }
 
         function pickMetro(station) {
             const slots = timeSlots.filter(t=>t.av);
-            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">🕐 Время</div><p>📍 ${station}</p>`;
-            slots.forEach(t => html += `<div class="option-card" onclick="pickTime('${station}','${t.range}')"><span>🕐 ${t.range}</span><span style="color:#a855f7;">→</span></div>`);
-            html += '<button class="btn-secondary" onclick="openModal(metroModal())">← Назад</button>';
+            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
+                <div class="modal-title">🕐 Выберите время</div>
+                <p style="color:#a1a1aa;margin-bottom:12px;font-size:13px;">📍 ${station}</p>`;
+            slots.forEach(t => {
+                html += `<div class="option-card" onclick="pickTime('${station}','${t.range}')">
+                    <span style="font-size:18px;">🕐</span><span>${t.range}</span><span class="option-arrow">→</span>
+                </div>`;
+            });
+            html += '<button class="btn-secondary" onclick="openModal(metroModal())">← Назад к выбору метро</button>';
             openModal(html);
         }
 
-        function pickTime(metro,time) {
+        function pickTime(metro, time) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+            const count = cart.reduce((s,i)=>s+i.qty,0);
+            const itemsList = cart.map(i => `
+                <div style="display:flex;justify-content:space-between;font-size:13px;">
+                    <span>${i.name} x${i.qty}</span>
+                    <span>${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</span>
+                </div>`).join('');
             openModal(`
                 <div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
-                <div class="modal-title">✅ Подтверждение</div>
-                <div class="confirm-box"><p>📍 <b>${metro}</b></p><p>🕐 <b>${time}</b></p><p>📦 ${cart.reduce((s,i)=>s+i.qty,0)} шт.</p><p style="font-size:18px;font-weight:700;color:#a855f7;">💰 ${total.toLocaleString('ru-RU')} ₽</p></div>
-                <button class="btn-primary" onclick="sendOrder('${metro}','${time}')">✅ Подтвердить</button>
-                <button class="btn-secondary" onclick="pickMetro('${metro}')">← Назад</button>
+                <div class="modal-title">✅ Подтверждение заказа</div>
+                <div class="confirm-box">
+                    <p style="margin-bottom:6px;">📍 <b>Метро:</b> ${metro}</p>
+                    <p style="margin-bottom:6px;">🕐 <b>Время:</b> ${time}</p>
+                    <p style="margin-bottom:10px;">📦 <b>Товаров:</b> ${count} шт.</p>
+                    <div style="border-top:1px solid #2a2a35;padding-top:10px;margin-bottom:8px;">${itemsList}</div>
+                    <p style="font-size:18px;font-weight:700;color:#a855f7;">💰 ${total.toLocaleString('ru-RU')} ₽</p>
+                </div>
+                <button class="btn-primary" onclick="sendOrder('${metro}','${time}')">✅ Подтвердить заказ</button>
+                <button class="btn-secondary" onclick="pickMetro('${metro}')">← Изменить время</button>
             `);
         }
 
-        function sendOrder(metro,time) {
+        function sendOrder(metro, time) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
-            orders.unshift({id:Date.now(),items:[...cart],total,metro,time,status:'pending'});
-            tg.sendData(JSON.stringify({action:'new_order',items:cart.map(i=>({name:i.name,price:i.price,qty:i.qty})),total,metro,time}));
-            cart=[]; saveData(); closeModal(); showToast('Заказ оформлен!'); renderContent();
+            const order = {
+                id: Date.now(),
+                items: [...cart],
+                total: total,
+                metro: metro,
+                time: time,
+                status: 'pending',
+                canEdit: false,
+                date: new Date().toISOString()
+            };
+            orders.unshift(order);
+            tg.sendData(JSON.stringify({
+                action:'new_order',
+                items: cart.map(i=>({name:i.name,price:i.price,qty:i.qty})),
+                total, metro, time
+            }));
+            cart = [];
+            saveData();
+            closeModal();
+            showToast('✅ Заказ оформлен!');
+            renderContent();
         }
 
+        // ============ АДМИН-ПАНЕЛЬ ============
         function renderAdmin(area) {
-            if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
-            let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
-            html += '<h4 style="margin:12px 0 6px;">📦 Добавить товар на сервер</h4>';
+            if (!isAdmin) { area.innerHTML='<p style="text-align:center;padding:40px;">⛔ Нет доступа</p>'; return; }
+
+            let html = '<h3 style="margin-bottom:14px;">⚙️ Админ-панель</h3>';
+
+            // Добавление товара
+            html += '<h4 style="margin:16px 0 8px;">📦 Добавить товар на сервер</h4>';
             html += `<input id="an" class="admin-input" placeholder="Название товара">
                 <input id="ad" class="admin-input" placeholder="Описание">
                 <input id="ap" type="number" class="admin-input" placeholder="Цена (₽)">
                 <input id="as" type="number" class="admin-input" placeholder="Количество на складе">
                 <select id="ac" class="admin-select">${categories.filter(c=>c.av).map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}</select>
-                <button class="btn-primary" onclick="addFromAdmin()">➕ Добавить на сервер</button>`;
-            html += '<h4 style="margin:12px 0 6px;">📋 Товары на сервере</h4>';
-            if (!products.length) html += '<p style="color:var(--text2);">Нет товаров</p>';
-            else products.forEach(p => html += `<div class="option-card" style="justify-content:space-between;"><span>${p.name} | ${p.price}₽ | ${p.stock}шт</span><button class="btn-danger" style="width:auto;padding:5px 10px;" onclick="deleteProductAPI(${p.id})">❌</button></div>`);
-            html += '<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4><button class="btn-primary" onclick="loadProductsFromAPI()">🔄 Загрузить товары с сервера</button>';
+                <div class="upload-area" onclick="document.getElementById('imgUpload').click()">📷 Загрузить картинки (до 5)</div>
+                <input type="file" id="imgUpload" multiple accept="image/*" onchange="previewImages()" style="display:none;">
+                <div class="img-preview" id="imgPrev"></div>
+                <button class="btn-primary" onclick="addProductFromAdmin()">➕ Добавить на сервер</button>`;
+
+            // Список товаров
+            html += '<h4 style="margin:16px 0 8px;">📋 Товары на сервере</h4>';
+            if (!products.length) {
+                html += '<p style="color:var(--text2);padding:12px;">Нет товаров. Нажмите 🔄 для загрузки.</p>';
+            } else {
+                products.forEach(p => {
+                    html += `<div class="option-card" style="justify-content:space-between;">
+                        <div>
+                            <b>${p.name}</b>
+                            <span style="color:var(--text2);font-size:12px;"> | ${p.category} | ${p.price}₽ | ${p.stock}шт</span>
+                        </div>
+                        <button class="btn-danger" style="width:auto;padding:6px 12px;font-size:12px;" onclick="deleteProductFromBot(${p.id})">❌</button>
+                    </div>`;
+                });
+            }
+
+            // Заказы
+            html += '<h4 style="margin:16px 0 8px;">📦 Заказы</h4>';
+            if (!orders.length) {
+                html += '<p style="color:var(--text2);padding:12px;">Нет заказов</p>';
+            } else {
+                orders.forEach(o => {
+                    const sm = {pending:'⏳ Ожидает',confirmed:'✅ Подтверждён',completed:'🎉 Выполнен',cancelled:'❌ Отменён'};
+                    html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
+                        <div style="display:flex;justify-content:space-between;width:100%;">
+                            <b>#${o.id.toString().slice(-6)}</b>
+                            <span>${sm[o.status]||o.status}</span>
+                        </div>
+                        <p style="font-size:12px;">💰 ${(o.total||0).toLocaleString('ru-RU')} ₽ | 📍 ${o.metro||'—'} | 🕐 ${o.time||'—'}</p>
+                        <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
+                            ${o.status==='pending'?`<button class="btn-primary" style="width:auto;padding:5px 10px;font-size:11px;" onclick="updOrder(${o.id},'confirmed')">✅ Подтвердить</button>`:''}
+                            ${o.status==='confirmed'?`<button class="btn-primary" style="width:auto;padding:5px 10px;font-size:11px;" onclick="updOrder(${o.id},'completed')">🎉 Выполнен</button>`:''}
+                            ${o.status==='pending'?`<button class="btn-danger" style="width:auto;padding:5px 10px;font-size:11px;" onclick="updOrder(${o.id},'cancelled')">❌ Отменить</button>`:''}
+                            <button class="btn-secondary" style="width:auto;padding:5px 10px;font-size:11px;" onclick="toggleCanEdit(${o.id})">✏️ ${o.canEdit?'Запретить':'Разрешить'} отмену</button>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // Категории
+            html += '<h4 style="margin:16px 0 8px;">📂 Управление категориями</h4>';
+            html += '<div style="display:flex;gap:6px;margin-bottom:8px;"><input id="newCat" class="admin-input" placeholder="Новая категория" style="flex:1;"><button class="btn-primary" style="width:auto;padding:10px 16px;" onclick="addCategory()">+</button></div>';
+            categories.forEach(c => {
+                html += `<div class="option-card" style="justify-content:space-between;">
+                    <span>${c.name} ${c.av?'✅':'❌'}</span>
+                    <div class="toggle${c.av?' on':''}" onclick="toggleCategory(${c.id})"></div>
+                </div>`;
+            });
+
+            // Метро
+            html += '<h4 style="margin:16px 0 8px;">🚇 Станции метро (вкл/выкл)</h4>';
+            metroData.forEach(line => {
+                html += `<p style="color:${line.color};font-weight:600;margin:8px 0 4px;">● ${line.line}</p>`;
+                line.stations.forEach(s => {
+                    html += `<div class="option-card" style="justify-content:space-between;">
+                        <span>🚇 ${s.name}</span>
+                        <div class="toggle${s.av?' on':''}" onclick="toggleMetro('${line.line}','${s.name}')"></div>
+                    </div>`;
+                });
+            });
+
+            // Время
+            html += '<h4 style="margin:16px 0 8px;">🕐 Временные слоты (вкл/выкл)</h4>';
+            timeSlots.forEach(t => {
+                html += `<div class="option-card" style="justify-content:space-between;">
+                    <span>🕐 ${t.range}</span>
+                    <div class="toggle${t.av?' on':''}" onclick="toggleTimeSlot(${t.id})"></div>
+                </div>`;
+            });
+
+            // Синхронизация
+            html += '<h4 style="margin:16px 0 8px;">🔄 Синхронизация</h4>';
+            html += '<button class="btn-primary" onclick="syncFromBot()">🔄 Загрузить товары с сервера</button>';
+
             area.innerHTML = html;
         }
 
-        function addFromAdmin() {
-            const name = document.getElementById('an')?.value?.trim();
-            const desc = document.getElementById('ad')?.value?.trim();
-            const price = parseFloat(document.getElementById('ap')?.value||0);
-            const stock = parseInt(document.getElementById('as')?.value||0);
-            const cat = document.getElementById('ac')?.value||'Без категории';
-            if (!name||price<=0) { showToast('Введите название и цену'); return; }
-            addProductAPI(name, desc, price, stock, cat);
-            document.getElementById('an').value=''; document.getElementById('ad').value='';
-            document.getElementById('ap').value=''; document.getElementById('as').value='';
+        function previewImages() {
+            const files = document.getElementById('imgUpload').files;
+            tempImages = [];
+            const prev = document.getElementById('imgPrev');
+            prev.innerHTML = '';
+            for (let f of files) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    tempImages.push(e.target.result);
+                    prev.innerHTML += `<img src="${e.target.result}">`;
+                };
+                reader.readAsDataURL(f);
+            }
         }
 
-        function openModal(html) { document.getElementById('modalBox').innerHTML=html; document.getElementById('modalOverlay').style.display='flex'; }
-        function closeModal() { document.getElementById('modalOverlay').style.display='none'; }
-        function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+        function addProductFromAdmin() {
+            const name = document.getElementById('an')?.value?.trim();
+            const desc = document.getElementById('ad')?.value?.trim();
+            const price = parseFloat(document.getElementById('ap')?.value || 0);
+            const stock = parseInt(document.getElementById('as')?.value || 0);
+            const cat = document.getElementById('ac')?.value || 'Без категории';
+            if (!name || price <= 0) { showToast('Введите название и цену'); return; }
+            addProductToBot(name, desc, price, stock, cat);
+            document.getElementById('an').value = '';
+            document.getElementById('ad').value = '';
+            document.getElementById('ap').value = '';
+            document.getElementById('as').value = '';
+            document.getElementById('imgPrev').innerHTML = '';
+            tempImages = [];
+        }
 
-        loadData(); checkAdmin(); loadProductsFromAPI();
+        function updOrder(id, status) {
+            const o = orders.find(x=>x.id===id);
+            if (o) { o.status = status; saveData(); renderContent(); }
+        }
+        function toggleCanEdit(id) {
+            const o = orders.find(x=>x.id===id);
+            if (o) { o.canEdit = !o.canEdit; saveData(); renderContent(); }
+        }
+        function addCategory() {
+            const name = document.getElementById('newCat')?.value?.trim();
+            if (name) {
+                categories.push({id:Date.now(), name, av:true});
+                saveData(); renderContent(); showToast('Категория добавлена');
+            }
+        }
+        function toggleCategory(id) {
+            const c = categories.find(x=>x.id===id);
+            if (c) { c.av = c.av===false?true:false; saveData(); renderContent(); }
+        }
+        function toggleMetro(line, name) {
+            const l = metroData.find(x=>x.line===line);
+            if (l) { const s = l.stations.find(x=>x.name===name); if (s) { s.av = s.av===false?true:false; saveData(); renderContent(); } }
+        }
+        function toggleTimeSlot(id) {
+            const t = timeSlots.find(x=>x.id===id);
+            if (t) { t.av = t.av===false?true:false; saveData(); renderContent(); }
+        }
+
+        // ============ MODAL ============
+        function openModal(html) {
+            document.getElementById('modalBox').innerHTML = html;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+        function closeModalOutside(e) {
+            if (e.target === document.getElementById('modalOverlay')) closeModal();
+        }
+
+        // ============ INIT ============
+        loadData();
+        checkAdmin();
+        syncFromBot();
+        renderContent();
     </script>
 </body>
 </html>
