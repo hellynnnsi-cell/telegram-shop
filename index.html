@@ -145,7 +145,7 @@
         .toggle.on { background:var(--accent); }
         .toggle::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:white; transition:all 0.2s; }
         .toggle.on::after { left:22px; }
-        .empty-state { text-align:center; padding:40px 20px; color:var(--text2); }
+        .empty-state { text-align:center; padding:40px 20px; color:var(--text2); grid-column:1/-1; }
         .empty-icon { font-size:48px; margin-bottom:10px; }
         .confirm-box { background:var(--card2); padding:14px; border-radius:12px; margin-bottom:10px; line-height:1.8; font-size:13px; }
         .toast {
@@ -180,7 +180,7 @@
         </div>
         <div id="contentArea"></div>
     </div>
-    <button class="sync-btn" onclick="syncProducts()" title="Синхронизировать товары">🔄</button>
+    <button class="sync-btn" onclick="syncProducts()" title="Синхронизировать">🔄</button>
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
         <div class="modal" id="modalBox"></div>
@@ -278,13 +278,11 @@
             } catch(e) {}
         }
 
-        // ЗАПРОС ТОВАРОВ ИЗ БОТА
         function syncProducts() {
             tg.sendData(JSON.stringify({action:'get_products'}));
             showToast('Запрос товаров...');
         }
 
-        // Вызываем при старте
         setTimeout(syncProducts, 300);
 
         function checkAdmin() { if (isAdmin) document.getElementById('adminBtn').style.display = 'flex'; }
@@ -326,7 +324,7 @@
             }
 
             if (!list.length) {
-                html += '<div class="empty-state"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncProducts()">🔄 Синхронизировать</button></div>';
+                html += `<div class="empty-state" style="grid-column:1/-1;text-align:center;"><div class="empty-icon">📦</div><p>Нет товаров</p><button class="btn-primary" style="margin-top:12px;" onclick="syncProducts()">🔄 Синхронизировать</button></div>`;
             } else {
                 list.forEach(p => {
                     const inCart = cart.find(c => c.id === p.id);
@@ -373,7 +371,7 @@
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             let html = '<h3 style="margin-bottom:10px;">🛒 Корзина</h3>';
             if (!cart.length) {
-                html += '<div class="empty-state"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
+                html += '<div class="empty-state" style="grid-column:1/-1;text-align:center;"><div class="empty-icon">🛒</div><p>Пусто</p></div>';
             } else {
                 html += cart.map(i => `
                     <div class="cart-item">
@@ -504,7 +502,7 @@
 
             html += `<h4 style="margin:12px 0 6px;">🔄 Синхронизация</h4>
                 <button class="btn-primary" onclick="syncProducts()">🔄 Загрузить товары с сервера</button>
-                <p style="font-size:11px;color:var(--text2);margin-top:6px;">Товары добавляются через бота: Название|Описание|Цена|Кол-во|Категория</p>`;
+                <p style="font-size:11px;color:var(--text2);margin-top:6px;">Товары добавляются через бота:<br>Название|Описание|Цена|Кол-во|Категория</p>`;
 
             area.innerHTML = html;
         }
