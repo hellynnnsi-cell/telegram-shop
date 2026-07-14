@@ -53,16 +53,24 @@
         .header {
             display:flex; align-items:center; justify-content:space-between;
             padding:6px 0 14px; position:sticky; top:0; z-index:50;
+            background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none;
+            border-bottom:none;
+        }
+        .header-bg {
+            position:absolute; top:0; left:50%; transform:translateX(-50%);
+            width:calc(100% - 8px); height:100%;
             background:rgba(6,6,11,0.85); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+            border-radius:0 0 20px 20px; z-index:-1;
             border-bottom:1px solid rgba(255,255,255,0.04);
         }
         .logo { 
-            font-size:20px; font-weight:900; color:var(--text); letter-spacing:-1px;
+            font-size:20px; font-weight:900; letter-spacing:-1px;
             cursor:pointer; transition:all 0.2s; background:linear-gradient(135deg, var(--accent2), var(--pink));
             -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            position:relative; z-index:1;
         }
         .logo:active { transform:scale(0.95); opacity:0.8; }
-        .header-actions { display:flex; gap:8px; }
+        .header-actions { display:flex; gap:8px; position:relative; z-index:1; }
         .icon-btn {
             width:40px; height:40px; border-radius:12px; background:var(--card);
             border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
@@ -126,7 +134,6 @@
         .btn-add:active { transform:scale(0.85); }
         .btn-add.in-cart { background:var(--green); box-shadow:0 2px 8px rgba(34,197,94,0.3); }
         
-        /* Быстрое управление количеством */
         .qty-inline { display:flex; align-items:center; gap:4px; }
         .qty-inline-btn {
             width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.08);
@@ -187,14 +194,10 @@
             border:1px solid var(--border); color:var(--text); font-size:13px; cursor:pointer; margin-top:6px;
         }
         .btn-danger { background:var(--red) !important; }
-        .btn-danger-sm {
-            width:auto; padding:6px 12px; border-radius:8px; background:var(--red);
-            border:none; color:white; font-size:11px; cursor:pointer; font-weight:600;
-        }
-        .btn-delete-sm {
+        .btn-delete {
             width:auto; padding:4px 10px; border-radius:6px; background:transparent;
             border:1px solid var(--red); color:var(--red); font-size:10px; cursor:pointer;
-            margin-left:auto; flex-shrink:0;
+            margin-left:auto; flex-shrink:0; display:flex; align-items:center; gap:2px;
         }
         .total-row {
             display:flex; justify-content:space-between; align-items:center;
@@ -235,11 +238,13 @@
         .section-title { font-size:14px; font-weight:700; margin:12px 0 6px; color:var(--text); }
         .admin-row { display:flex; gap:6px; margin-bottom:6px; }
         .admin-row input, .admin-row select { flex:1; }
+        .metro-line-header { font-size:12px; font-weight:600; margin:6px 0 3px; }
     </style>
 </head>
 <body>
     <div class="app">
         <div class="header">
+            <div class="header-bg"></div>
             <div class="logo" onclick="goToCatalog()">Helgirll Test</div>
             <div class="header-actions">
                 <div class="icon-btn" onclick="navigateTo('catalog')" title="Каталог">🛍️</div>
@@ -550,9 +555,9 @@
         }
 
         function metroModal() {
-            let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📍 Выберите метро (СПб)</div>';
+            let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📍 Выберите станцию метро</div>';
             metroData.forEach(line => {
-                html += `<p style="color:${line.color};font-weight:600;margin:8px 0 4px;">● ${line.line}</p>`;
+                html += `<p style="color:${line.color};font-weight:600;margin:8px 0 4px;font-size:12px;">● ${line.line}</p>`;
                 line.stations.forEach(s => {
                     html += `<div class="option-card" onclick="${s.av?`pickMetro('${s.name}')`:''}" style="${!s.av?'opacity:0.5;pointer-events:none;':''}"><span>🚇 ${s.name}</span>${s.av?'<span style="color:#a855f7;">→</span>':'<span style="color:#ef4444;font-size:11px;">недоступна</span>'}</div>`;
                 });
@@ -606,39 +611,34 @@
             }
         }
 
-        // ===== АДМИН-ПАНЕЛЬ =====
         function renderAdmin(area) {
             if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
             let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
 
-            // Категории
             html += '<div class="section-title">📂 Категории</div>';
             html += '<div class="admin-row"><input id="newCat" class="search-input" placeholder="Новая категория" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addCat()">+</button></div>';
-            categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span>${c.name}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div><button class="btn-delete-sm" onclick="delCat(${c.id})">🗑</button></div></div>`);
+            categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">${c.name}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div><button class="btn-delete" onclick="delCat(${c.id})">✕</button></div></div>`);
 
-            // Товары
             html += '<div class="section-title">📦 Товары</div>';
             products.forEach(p => {
                 html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
                     <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
-                        <b style="font-size:12px;">${p.name}</b>
-                        <button class="btn-delete-sm" onclick="delProduct(${p.id})">🗑</button>
+                        <b style="font-size:13px;">${p.name}</b>
+                        <button class="btn-delete" onclick="delProduct(${p.id})">✕</button>
                     </div>
-                    <span style="font-size:10px;color:var(--text2);">${(p.price||0).toLocaleString('ru-RU')} ₽ | Остаток: ${p.stock}</span>
+                    <span style="font-size:11px;color:var(--text2);">${(p.price||0).toLocaleString('ru-RU')} ₽ | Остаток: ${p.stock}</span>
                 </div>`;
             });
             html += '<button class="btn-secondary" style="margin-top:8px;" onclick="openAddProduct()">➕ Добавить товар</button>';
 
-            // Метро
             html += '<div class="section-title">🚇 Станции метро</div>';
             metroData.forEach(line => {
-                html += `<p style="color:${line.color};font-weight:600;margin:6px 0 3px;font-size:12px;">● ${line.line}</p>`;
-                line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;padding:8px 10px;"><span style="font-size:11px;">🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${s.name}')"></div></div>`);
+                html += `<p class="metro-line-header" style="color:${line.color};">● ${line.line}</p>`;
+                line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;padding:8px 10px;"><span style="font-size:13px;">🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${s.name}')"></div></div>`);
             });
 
-            // Время
             html += '<div class="section-title">🕐 Время доставки</div>';
-            timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span>🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete-sm" onclick="delTime(${t.id})">🗑</button></div></div>`);
+            timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete" onclick="delTime(${t.id})">✕</button></div></div>`);
             html += '<div class="admin-row" style="margin-top:8px;"><input id="newTime" class="search-input" placeholder="Новый слот (напр: 20:00 – 22:00)" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addTime()">+</button></div>';
 
             area.innerHTML = html;
@@ -648,19 +648,8 @@
             const n = document.getElementById('newCat')?.value?.trim();
             if (n) { await apiPost(`/api/${BOT_ID}/categories`, {name: n}); await loadData(); renderContent(); }
         }
-
-        async function tgCat(id) {
-            await apiPut(`/api/${BOT_ID}/categories/${id}`);
-            await loadData(); renderContent();
-        }
-
-        async function delCat(id) {
-            if (confirm('Удалить категорию?')) {
-                await apiDelete(`/api/${BOT_ID}/categories/${id}`);
-                await loadData(); renderContent();
-                showToast('Категория удалена');
-            }
-        }
+        async function tgCat(id) { await apiPut(`/api/${BOT_ID}/categories/${id}`); await loadData(); renderContent(); }
+        async function delCat(id) { if (confirm('Удалить категорию?')) { await apiDelete(`/api/${BOT_ID}/categories/${id}`); await loadData(); renderContent(); showToast('Категория удалена'); } }
 
         function openAddProduct() {
             let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📦 Добавить товар</div>';
@@ -715,57 +704,20 @@
             }
         }
 
-        async function delProduct(id) {
-            if (confirm('Удалить товар?')) {
-                await apiDelete(`/api/${BOT_ID}/products/${id}`);
-                await loadData(); renderContent();
-                showToast('Товар удалён');
-            }
-        }
-
-        async function tgMetro(name) {
-            await apiPut(`/api/${BOT_ID}/metro/${encodeURIComponent(name)}`);
-            await loadData(); renderContent();
-        }
-
-        async function tgTime(id) {
-            await apiPut(`/api/${BOT_ID}/timeslots/${id}`);
-            await loadData(); renderContent();
-        }
-
+        async function delProduct(id) { if (confirm('Удалить товар?')) { await apiDelete(`/api/${BOT_ID}/products/${id}`); await loadData(); renderContent(); showToast('Товар удалён'); } }
+        async function tgMetro(name) { await apiPut(`/api/${BOT_ID}/metro/${encodeURIComponent(name)}`); await loadData(); renderContent(); }
+        async function tgTime(id) { await apiPut(`/api/${BOT_ID}/timeslots/${id}`); await loadData(); renderContent(); }
         async function addTime() {
             const range = document.getElementById('newTime')?.value?.trim();
-            if (range) {
-                await apiPost(`/api/${BOT_ID}/timeslots`, {range: range});
-                await loadData(); renderContent();
-                showToast('Слот добавлен');
-            }
+            if (range) { await apiPost(`/api/${BOT_ID}/timeslots`, {range: range}); await loadData(); renderContent(); showToast('Слот добавлен'); }
         }
+        async function delTime(id) { if (confirm('Удалить слот времени?')) { await apiDelete(`/api/${BOT_ID}/timeslots/${id}`); await loadData(); renderContent(); showToast('Слот удалён'); } }
 
-        async function delTime(id) {
-            if (confirm('Удалить слот времени?')) {
-                await apiDelete(`/api/${BOT_ID}/timeslots/${id}`);
-                await loadData(); renderContent();
-                showToast('Слот удалён');
-            }
-        }
+        function openModal(html) { document.getElementById('modalBox').innerHTML = html; document.getElementById('modalOverlay').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+        function closeModalOutside(e) { if(e.target === document.getElementById('modalOverlay')) closeModal(); }
 
-        function openModal(html) { 
-            document.getElementById('modalBox').innerHTML = html; 
-            document.getElementById('modalOverlay').style.display = 'flex'; 
-        }
-        function closeModal() { 
-            document.getElementById('modalOverlay').style.display = 'none'; 
-        }
-        function closeModalOutside(e) { 
-            if(e.target === document.getElementById('modalOverlay')) closeModal(); 
-        }
-
-        async function init() {
-            await loadData();
-            checkAdmin();
-            renderContent();
-        }
+        async function init() { await loadData(); checkAdmin(); renderContent(); }
         init();
     </script>
 </body>
