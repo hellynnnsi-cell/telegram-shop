@@ -49,28 +49,28 @@
             50%{opacity:1}
             100%{opacity:0.7}
         }
-        .app { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:12px 14px 100px; }
-        .header {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:6px 0 14px; position:sticky; top:0; z-index:50;
-            background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none;
-            border-bottom:none;
+        .app { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:0; }
+        
+        .header-wrap {
+            position:sticky; top:0; z-index:50; padding:0 14px;
         }
         .header-bg {
-            position:absolute; top:0; left:50%; transform:translateX(-50%);
-            width:calc(100% - 8px); height:100%;
-            background:rgba(6,6,11,0.85); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
-            border-radius:0 0 20px 20px; z-index:-1;
-            border-bottom:1px solid rgba(255,255,255,0.04);
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            background:rgba(6,6,11,0.9); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+            border-radius:0 0 24px 24px; z-index:-1;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+        .header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:8px 0 14px; position:relative;
         }
         .logo { 
             font-size:20px; font-weight:900; letter-spacing:-1px;
             cursor:pointer; transition:all 0.2s; background:linear-gradient(135deg, var(--accent2), var(--pink));
             -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-            position:relative; z-index:1;
         }
         .logo:active { transform:scale(0.95); opacity:0.8; }
-        .header-actions { display:flex; gap:8px; position:relative; z-index:1; }
+        .header-actions { display:flex; gap:8px; }
         .icon-btn {
             width:40px; height:40px; border-radius:12px; background:var(--card);
             border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
@@ -84,6 +84,9 @@
             display:flex; align-items:center; justify-content:center; padding:0 4px;
             box-shadow:0 2px 6px rgba(124,58,237,0.4);
         }
+        
+        .content-area { padding:12px 14px 100px; }
+        
         .search-wrap { display:flex; gap:8px; margin-bottom:12px; }
         .search-input {
             flex:1; padding:12px 14px; border-radius:14px; background:var(--card);
@@ -133,7 +136,6 @@
         }
         .btn-add:active { transform:scale(0.85); }
         .btn-add.in-cart { background:var(--green); box-shadow:0 2px 8px rgba(34,197,94,0.3); }
-        
         .qty-inline { display:flex; align-items:center; gap:4px; }
         .qty-inline-btn {
             width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.08);
@@ -142,7 +144,6 @@
         }
         .qty-inline-btn:active { background:rgba(255,255,255,0.15); }
         .qty-inline-val { font-size:12px; font-weight:700; min-width:16px; text-align:center; }
-        
         .modal-overlay {
             position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200;
             display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s;
@@ -234,28 +235,30 @@
         @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         @keyframes toastOut { from{opacity:1} to{opacity:0} }
         ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-thumb { background:#2a2a35; border-radius:2px; }
-        
         .section-title { font-size:14px; font-weight:700; margin:12px 0 6px; color:var(--text); }
         .admin-row { display:flex; gap:6px; margin-bottom:6px; }
         .admin-row input, .admin-row select { flex:1; }
-        .metro-line-header { font-size:12px; font-weight:600; margin:6px 0 3px; }
+        .metro-line-header { font-weight:700; margin:10px 0 4px; font-size:13px; }
     </style>
 </head>
 <body>
     <div class="app">
-        <div class="header">
+        <div class="header-wrap">
             <div class="header-bg"></div>
-            <div class="logo" onclick="goToCatalog()">Helgirll Test</div>
-            <div class="header-actions">
-                <div class="icon-btn" onclick="navigateTo('catalog')" title="Каталог">🛍️</div>
-                <div class="icon-btn" onclick="navigateTo('cart')" title="Корзина">
-                    🛒<span class="badge" id="cartBadge">0</span>
+            <div class="header">
+                <div class="logo" onclick="goToCatalog()">Helgirll Test</div>
+                <div class="header-actions">
+                    <div class="icon-btn" onclick="navigateTo('catalog')" title="Каталог">🛍️</div>
+                    <div class="icon-btn" onclick="navigateTo('cart')" title="Корзина">
+                        🛒<span class="badge" id="cartBadge">0</span>
+                    </div>
+                    <div class="icon-btn" onclick="navigateTo('profile')" title="Профиль">👤</div>
+                    <div class="icon-btn" id="adminBtn" style="display:none" onclick="navigateTo('admin')" title="Админ">⚙️</div>
                 </div>
-                <div class="icon-btn" onclick="navigateTo('profile')" title="Профиль">👤</div>
-                <div class="icon-btn" id="adminBtn" style="display:none" onclick="navigateTo('admin')" title="Админ">⚙️</div>
             </div>
         </div>
-        <div id="contentArea"></div>
+        
+        <div class="content-area" id="contentArea"></div>
     </div>
     <div id="toastContainer"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none" onclick="closeModalOutside(event)">
@@ -287,7 +290,10 @@
             try {
                 const res = await fetch(`${API_URL}${path}`);
                 return await res.json();
-            } catch(e) { console.error('API Error:', e); return []; }
+            } catch(e) {
+                console.error('API Error:', e);
+                return [];
+            }
         }
 
         async function apiPost(path, data) {
@@ -298,21 +304,30 @@
                     body: JSON.stringify(data)
                 });
                 return await res.json();
-            } catch(e) { console.error('API Error:', e); return null; }
+            } catch(e) {
+                console.error('API Error:', e);
+                return null;
+            }
         }
 
         async function apiPut(path) {
             try {
                 const res = await fetch(`${API_URL}${path}`, {method: 'PUT'});
                 return await res.json();
-            } catch(e) { console.error('API Error:', e); return null; }
+            } catch(e) {
+                console.error('API Error:', e);
+                return null;
+            }
         }
 
         async function apiDelete(path) {
             try {
                 const res = await fetch(`${API_URL}${path}`, {method: 'DELETE'});
                 return await res.json();
-            } catch(e) { console.error('API Error:', e); return null; }
+            } catch(e) {
+                console.error('API Error:', e);
+                return null;
+            }
         }
 
         async function loadData() {
@@ -333,11 +348,15 @@
                     cart = d.cart || [];
                     orders = d.orders || [];
                 }
-            } catch(e) { console.error('Load error:', e); }
+            } catch(e) {
+                console.error('Load error:', e);
+            }
         }
 
         function saveUserData() {
-            try { localStorage.setItem('hg_user_data', JSON.stringify({cart, orders})); } catch(e) {}
+            try {
+                localStorage.setItem('hg_user_data', JSON.stringify({cart, orders}));
+            } catch(e) {}
         }
 
         function checkAdmin() {
@@ -345,7 +364,8 @@
         }
 
         function goToCatalog() {
-            selectedCat = 'Все'; searchQ = '';
+            selectedCat = 'Все';
+            searchQ = '';
             switchView('catalog');
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
@@ -362,7 +382,8 @@
 
         function showToast(text) {
             const t = document.createElement('div');
-            t.className = 'toast'; t.textContent = text;
+            t.className = 'toast';
+            t.textContent = text;
             document.getElementById('toastContainer').appendChild(t);
             setTimeout(() => t.remove(), 1800);
         }
@@ -557,7 +578,7 @@
         function metroModal() {
             let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📍 Выберите станцию метро</div>';
             metroData.forEach(line => {
-                html += `<p style="color:${line.color};font-weight:600;margin:8px 0 4px;font-size:12px;">● ${line.line}</p>`;
+                html += `<p style="color:${line.color};font-weight:700;margin:10px 0 4px;font-size:13px;">${line.line}</p>`;
                 line.stations.forEach(s => {
                     html += `<div class="option-card" onclick="${s.av?`pickMetro('${s.name}')`:''}" style="${!s.av?'opacity:0.5;pointer-events:none;':''}"><span>🚇 ${s.name}</span>${s.av?'<span style="color:#a855f7;">→</span>':'<span style="color:#ef4444;font-size:11px;">недоступна</span>'}</div>`;
                 });
@@ -611,14 +632,17 @@
             }
         }
 
+        // ===== АДМИН-ПАНЕЛЬ =====
         function renderAdmin(area) {
             if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
             let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
 
+            // Категории
             html += '<div class="section-title">📂 Категории</div>';
             html += '<div class="admin-row"><input id="newCat" class="search-input" placeholder="Новая категория" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addCat()">+</button></div>';
             categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">${c.name}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div><button class="btn-delete" onclick="delCat(${c.id})">✕</button></div></div>`);
 
+            // Товары
             html += '<div class="section-title">📦 Товары</div>';
             products.forEach(p => {
                 html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
@@ -631,12 +655,14 @@
             });
             html += '<button class="btn-secondary" style="margin-top:8px;" onclick="openAddProduct()">➕ Добавить товар</button>';
 
+            // Метро - с цветными названиями веток
             html += '<div class="section-title">🚇 Станции метро</div>';
             metroData.forEach(line => {
                 html += `<p class="metro-line-header" style="color:${line.color};">● ${line.line}</p>`;
                 line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;padding:8px 10px;"><span style="font-size:13px;">🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${s.name}')"></div></div>`);
             });
 
+            // Время
             html += '<div class="section-title">🕐 Время доставки</div>';
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete" onclick="delTime(${t.id})">✕</button></div></div>`);
             html += '<div class="admin-row" style="margin-top:8px;"><input id="newTime" class="search-input" placeholder="Новый слот (напр: 20:00 – 22:00)" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addTime()">+</button></div>';
@@ -648,8 +674,19 @@
             const n = document.getElementById('newCat')?.value?.trim();
             if (n) { await apiPost(`/api/${BOT_ID}/categories`, {name: n}); await loadData(); renderContent(); }
         }
-        async function tgCat(id) { await apiPut(`/api/${BOT_ID}/categories/${id}`); await loadData(); renderContent(); }
-        async function delCat(id) { if (confirm('Удалить категорию?')) { await apiDelete(`/api/${BOT_ID}/categories/${id}`); await loadData(); renderContent(); showToast('Категория удалена'); } }
+
+        async function tgCat(id) {
+            await apiPut(`/api/${BOT_ID}/categories/${id}`);
+            await loadData(); renderContent();
+        }
+
+        async function delCat(id) {
+            if (confirm('Удалить категорию?')) {
+                await apiDelete(`/api/${BOT_ID}/categories/${id}`);
+                await loadData(); renderContent();
+                showToast('Категория удалена');
+            }
+        }
 
         function openAddProduct() {
             let html = '<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📦 Добавить товар</div>';
@@ -672,7 +709,10 @@
             prev.innerHTML = '';
             for (let f of files) {
                 const reader = new FileReader();
-                reader.onload = e => { tempImages.push(e.target.result); prev.innerHTML += `<img src="${e.target.result}">`; };
+                reader.onload = e => {
+                    tempImages.push(e.target.result);
+                    prev.innerHTML += `<img src="${e.target.result}">`;
+                };
                 reader.readAsDataURL(f);
             }
         }
@@ -683,6 +723,7 @@
             const price = parseFloat(document.getElementById('pp')?.value||0);
             const stock = parseInt(document.getElementById('ps')?.value||0);
             const catId = parseInt(document.getElementById('pc')?.value||0);
+            
             if (name && price > 0) {
                 let uploadedImages = [];
                 if (tempImages.length > 0) {
@@ -691,33 +732,78 @@
                         const blob = await response.blob();
                         const formData = new FormData();
                         formData.append('file', blob, 'image.jpg');
-                        const uploadRes = await fetch(`${API_URL}/api/${BOT_ID}/upload`, { method: 'POST', body: formData });
+                        const uploadRes = await fetch(`${API_URL}/api/${BOT_ID}/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
                         const uploadData = await uploadRes.json();
-                        if (uploadData.url) uploadedImages.push(uploadData.url);
+                        if (uploadData.url) {
+                            uploadedImages.push(uploadData.url);
+                        }
                     }
                 }
-                await apiPost(`/api/${BOT_ID}/products`, { name, description: desc, price, stock, category_id: catId, images: uploadedImages });
+                await apiPost(`/api/${BOT_ID}/products`, {
+                    name, description: desc, price, stock, category_id: catId, images: uploadedImages
+                });
                 tempImages = [];
                 closeModal();
-                await loadData(); renderContent();
+                await loadData();
+                renderContent();
                 showToast('Товар добавлен');
             }
         }
 
-        async function delProduct(id) { if (confirm('Удалить товар?')) { await apiDelete(`/api/${BOT_ID}/products/${id}`); await loadData(); renderContent(); showToast('Товар удалён'); } }
-        async function tgMetro(name) { await apiPut(`/api/${BOT_ID}/metro/${encodeURIComponent(name)}`); await loadData(); renderContent(); }
-        async function tgTime(id) { await apiPut(`/api/${BOT_ID}/timeslots/${id}`); await loadData(); renderContent(); }
+        async function delProduct(id) {
+            if (confirm('Удалить товар?')) {
+                await apiDelete(`/api/${BOT_ID}/products/${id}`);
+                await loadData(); renderContent();
+                showToast('Товар удалён');
+            }
+        }
+
+        async function tgMetro(name) {
+            await apiPut(`/api/${BOT_ID}/metro/${encodeURIComponent(name)}`);
+            await loadData(); renderContent();
+        }
+
+        async function tgTime(id) {
+            await apiPut(`/api/${BOT_ID}/timeslots/${id}`);
+            await loadData(); renderContent();
+        }
+
         async function addTime() {
             const range = document.getElementById('newTime')?.value?.trim();
-            if (range) { await apiPost(`/api/${BOT_ID}/timeslots`, {range: range}); await loadData(); renderContent(); showToast('Слот добавлен'); }
+            if (range) {
+                await apiPost(`/api/${BOT_ID}/timeslots`, {range: range});
+                await loadData(); renderContent();
+                showToast('Слот добавлен');
+            }
         }
-        async function delTime(id) { if (confirm('Удалить слот времени?')) { await apiDelete(`/api/${BOT_ID}/timeslots/${id}`); await loadData(); renderContent(); showToast('Слот удалён'); } }
 
-        function openModal(html) { document.getElementById('modalBox').innerHTML = html; document.getElementById('modalOverlay').style.display = 'flex'; }
-        function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
-        function closeModalOutside(e) { if(e.target === document.getElementById('modalOverlay')) closeModal(); }
+        async function delTime(id) {
+            if (confirm('Удалить слот времени?')) {
+                await apiDelete(`/api/${BOT_ID}/timeslots/${id}`);
+                await loadData(); renderContent();
+                showToast('Слот удалён');
+            }
+        }
 
-        async function init() { await loadData(); checkAdmin(); renderContent(); }
+        function openModal(html) { 
+            document.getElementById('modalBox').innerHTML = html; 
+            document.getElementById('modalOverlay').style.display = 'flex'; 
+        }
+        function closeModal() { 
+            document.getElementById('modalOverlay').style.display = 'none'; 
+        }
+        function closeModalOutside(e) { 
+            if(e.target === document.getElementById('modalOverlay')) closeModal(); 
+        }
+
+        async function init() {
+            await loadData();
+            checkAdmin();
+            renderContent();
+        }
         init();
     </script>
 </body>
