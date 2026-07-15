@@ -249,6 +249,7 @@
         .admin-row { display:flex; gap:6px; margin-bottom:6px; }
         .admin-row input, .admin-row select { flex:1; }
         .metro-line-header { font-weight:700; margin:10px 0 4px; font-size:13px; }
+        .refresh-btn { margin-top:8px; font-size:11px; color:var(--accent2); cursor:pointer; text-align:center; }
     </style>
 </head>
 <body>
@@ -355,20 +356,27 @@
                 categories = c || [];
                 metroData = m || [];
                 timeSlots = t || [];
-                const saved = localStorage.getItem('hg_user_data');
+                
+                // Загружаем заказы из API для текущего пользователя
+                const userId = user.id || 0;
+                if (userId > 0) {
+                    const userOrders = await apiGet(`/api/${BOT_ID}/orders?user_id=${userId}`);
+                    orders = userOrders || [];
+                }
+                
+                // Корзину оставляем из localStorage
+                const saved = localStorage.getItem('hg_cart');
                 if (saved) {
-                    const d = JSON.parse(saved);
-                    cart = d.cart || [];
-                    orders = d.orders || [];
+                    cart = JSON.parse(saved);
                 }
             } catch(e) {
                 console.error('Load error:', e);
             }
         }
 
-        function saveUserData() {
+        function saveCart() {
             try {
-                localStorage.setItem('hg_user_data', JSON.stringify({cart, orders}));
+                localStorage.setItem('hg_cart', JSON.stringify(cart));
             } catch(e) {}
         }
 
@@ -390,6 +398,19 @@
 
         function switchView(view) {
             currentView = view;
+            if (view === 'profile') {
+                loadProfileData();
+            } else {
+                renderContent();
+            }
+        }
+
+        async function loadProfileData() {
+            const userId = user.id || 0;
+            if (userId > 0) {
+                const userOrders = await apiGet(`/api/${BOT_ID}/orders?user_id=${userId}`);
+                orders = userOrders || [];
+            }
             renderContent();
         }
 
@@ -476,7 +497,7 @@
             if (!p || p.stock < 1) { showToast('Нет в наличии'); return; }
             const ex = cart.find(x=>x.id===id);
             ex ? ex.qty++ : cart.push({...p, qty:1});
-            saveUserData(); renderContent();
+            saveCart(); renderContent();
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
 
@@ -487,7 +508,7 @@
             i.qty += delta;
             if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
             if (i.qty > (p?.stock||99)) i.qty = p.stock;
-            saveUserData(); renderContent();
+            saveCart(); renderContent();
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
 
@@ -527,7 +548,7 @@
             i.qty += delta;
             if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
             if (i.qty > (p?.stock||99)) i.qty = p.stock;
-            saveUserData();
+            saveCart();
             openProduct(id);
         }
 
@@ -550,7 +571,7 @@
                 }).join('');
                 html += `<div class="total-row"><span>Итого:</span><span class="total-val">${total.toLocaleString('ru-RU')} ₽</span></div>
                     <button class="btn-primary" onclick="startCheckout()">📋 Оформить</button>
-                    <button class="btn-secondary" onclick="cart=[];saveUserData();renderContent();">🗑 Очистить</button>`;
+                    <button class="btn-secondary" onclick="cart=[];saveCart();renderContent();">🗑 Очистить</button>`;
             }
             area.innerHTML = html;
         }
@@ -561,13 +582,16 @@
             i.qty += d;
             if (i.qty <= 0) cart = cart.filter(x=>x.id!==id);
             if (i.qty > (i.stock||99)) i.qty = i.stock;
-            saveUserData(); renderContent();
+            saveCart(); renderContent();
         }
 
         function renderProfile(area) {
             let html = `<h3 style="margin-bottom:10px;">👤 Профиль</h3>
                 <div class="confirm-box"><p>👤 <b>${user.first_name||'Пользователь'}</b></p><p>📎 @${user.username||'нет'}</p><p>📅 Заказов: ${orders.length}</p></div>
-                <h4 style="margin:12px 0 6px;">📋 История заказов</h4>`;
+                <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px;">
+                    <h4 style="margin:0;">📋 История заказов</h4>
+                    <span class="refresh-btn" onclick="loadProfileData()">🔄 Обновить</span>
+                </div>`;
             if (!orders.length) html += '<p style="color:var(--text2);">Нет заказов</p>';
             else {
                 orders.forEach(o => {
@@ -636,37 +660,12 @@
             
             const result = await apiPost(`/api/${BOT_ID}/orders`, orderData);
             if (result) {
-                const orderId = result.order_id;
-                orders.unshift({...orderData, id: orderId, status: 'pending', date: new Date().toISOString()});
                 cart = [];
-                saveUserData();
+                saveCart();
                 closeModal();
                 showToast('Заказ оформлен!');
                 await loadData();
                 renderContent();
-                
-                if (tg.sendData) {
-                    tg.sendData(JSON.stringify({
-                        action: 'new_order',
-                        order_id: orderId,
-                        total: total,
-                        metro: metro,
-                        time: time,
-                        items: orderData.items
-                    }));
-                }
-                
-                setTimeout(() => {
-                    if (tg.sendData) {
-                        tg.sendData(JSON.stringify({
-                            action: 'new_order',
-                            order_id: orderId,
-                            total: total,
-                            metro: metro,
-                            time: time
-                        }));
-                    }
-                }, 500);
             } else {
                 showToast('Ошибка оформления');
             }
