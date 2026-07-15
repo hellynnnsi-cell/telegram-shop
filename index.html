@@ -644,7 +644,6 @@
                 await loadData();
                 renderContent();
                 
-                // Отправка данных боту через tg.sendData
                 if (tg.sendData) {
                     tg.sendData(JSON.stringify({
                         action: 'new_order',
@@ -656,7 +655,6 @@
                     }));
                 }
                 
-                // Повторная отправка для надёжности
                 setTimeout(() => {
                     if (tg.sendData) {
                         tg.sendData(JSON.stringify({
