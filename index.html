@@ -625,6 +625,7 @@
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             const orderData = {
                 user_id: user.id || 0,
+                user_telegram_id: user.id || 0,
                 username: user.username || '',
                 firstname: user.first_name || '',
                 metro: metro,
