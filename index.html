@@ -136,6 +136,7 @@
         }
         .btn-add:active { transform:scale(0.85); }
         .btn-add.in-cart { background:var(--green); box-shadow:0 2px 8px rgba(34,197,94,0.3); }
+        
         .qty-inline { display:flex; align-items:center; gap:4px; }
         .qty-inline-btn {
             width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.08);
@@ -144,6 +145,7 @@
         }
         .qty-inline-btn:active { background:rgba(255,255,255,0.15); }
         .qty-inline-val { font-size:12px; font-weight:700; min-width:16px; text-align:center; }
+        
         .modal-overlay {
             position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200;
             display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s;
@@ -163,6 +165,7 @@
             cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;
         }
         .modal-title { font-size:18px; font-weight:700; margin-bottom:14px; }
+        
         .cart-item, .option-card {
             display:flex; align-items:center; gap:10px; padding:12px;
             background:var(--card2); border-radius:12px; margin-bottom:6px; cursor:pointer; transition:all 0.2s;
@@ -183,6 +186,7 @@
             color:white; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;
             font-weight:700;
         }
+        
         .btn-primary {
             width:100%; padding:14px; border-radius:14px;
             background:linear-gradient(135deg, var(--accent), var(--accent2));
@@ -200,11 +204,13 @@
             border:1px solid var(--red); color:var(--red); font-size:10px; cursor:pointer;
             margin-left:auto; flex-shrink:0; display:flex; align-items:center; gap:2px;
         }
+        
         .total-row {
             display:flex; justify-content:space-between; align-items:center;
             padding:14px 0; border-top:1px solid #1e1e2e; margin-top:6px;
         }
         .total-val { font-size:20px; font-weight:800; color:var(--accent2); }
+        
         .toggle {
             width:44px; height:24px; border-radius:12px; background:#3a3a45;
             position:relative; cursor:pointer; transition:all 0.2s; flex-shrink:0;
@@ -215,9 +221,11 @@
             border-radius:50%; background:white; transition:all 0.2s;
         }
         .toggle.on::after { left:22px; }
+        
         .empty-state { text-align:center; padding:40px 20px; color:var(--text2); }
         .empty-icon { font-size:48px; margin-bottom:10px; }
         .confirm-box { background:var(--card2); padding:14px; border-radius:12px; margin-bottom:10px; line-height:1.8; font-size:13px; }
+        
         .upload-area {
             border:2px dashed var(--border); border-radius:12px; padding:20px;
             text-align:center; cursor:pointer; margin-bottom:10px; transition:all 0.2s;
@@ -226,6 +234,7 @@
         .upload-area input { display:none; }
         .img-preview { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
         .img-preview img { width:60px; height:60px; border-radius:8px; object-fit:cover; }
+        
         .toast {
             position:fixed; top:16px; left:50%; transform:translateX(-50%);
             background:var(--green); color:white; padding:8px 20px; border-radius:24px;
@@ -235,6 +244,7 @@
         @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-16px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         @keyframes toastOut { from{opacity:1} to{opacity:0} }
         ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-thumb { background:#2a2a35; border-radius:2px; }
+        
         .section-title { font-size:14px; font-weight:700; margin:12px 0 6px; color:var(--text); }
         .admin-row { display:flex; gap:6px; margin-bottom:6px; }
         .admin-row input, .admin-row select { flex:1; }
@@ -267,7 +277,10 @@
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); tg.ready(); tg.MainButton.hide(); tg.enableClosingConfirmation();
+        tg.expand();
+        tg.ready();
+        tg.MainButton.hide();
+        tg.enableClosingConfirmation();
 
         const user = tg.initDataUnsafe?.user || {};
         const isAdmin = user.username === 'helgirll';
@@ -614,35 +627,60 @@
                 user_id: user.id || 0,
                 username: user.username || '',
                 firstname: user.first_name || '',
-                metro, time, total,
+                metro: metro,
+                time: time,
+                total: total,
                 items: cart.map(i => ({id: i.id, name: i.name, price: i.price, qty: i.qty}))
             };
+            
             const result = await apiPost(`/api/${BOT_ID}/orders`, orderData);
             if (result) {
-                orders.unshift({...orderData, id: result.order_id, status: 'pending', date: new Date().toISOString()});
+                const orderId = result.order_id;
+                orders.unshift({...orderData, id: orderId, status: 'pending', date: new Date().toISOString()});
                 cart = [];
                 saveUserData();
                 closeModal();
                 showToast('Заказ оформлен!');
                 await loadData();
                 renderContent();
-                tg.sendData(JSON.stringify({action:'new_order',order:{id:result.order_id,...orderData}}));
+                
+                // Отправка данных боту через tg.sendData
+                if (tg.sendData) {
+                    tg.sendData(JSON.stringify({
+                        action: 'new_order',
+                        order_id: orderId,
+                        total: total,
+                        metro: metro,
+                        time: time,
+                        items: orderData.items
+                    }));
+                }
+                
+                // Повторная отправка для надёжности
+                setTimeout(() => {
+                    if (tg.sendData) {
+                        tg.sendData(JSON.stringify({
+                            action: 'new_order',
+                            order_id: orderId,
+                            total: total,
+                            metro: metro,
+                            time: time
+                        }));
+                    }
+                }, 500);
             } else {
                 showToast('Ошибка оформления');
             }
         }
 
-        // ===== АДМИН-ПАНЕЛЬ =====
         function renderAdmin(area) {
             if (!isAdmin) { area.innerHTML='<p>⛔ Нет доступа</p>'; return; }
             let html = '<h3 style="margin-bottom:10px;">⚙️ Админ-панель</h3>';
 
-            // Категории
             html += '<div class="section-title">📂 Категории</div>';
             html += '<div class="admin-row"><input id="newCat" class="search-input" placeholder="Новая категория" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addCat()">+</button></div>';
             categories.forEach(c => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">${c.name}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${c.av!==false?' on':''}" onclick="tgCat(${c.id})"></div><button class="btn-delete" onclick="delCat(${c.id})">✕</button></div></div>`);
 
-            // Товары
             html += '<div class="section-title">📦 Товары</div>';
             products.forEach(p => {
                 html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
@@ -655,14 +693,12 @@
             });
             html += '<button class="btn-secondary" style="margin-top:8px;" onclick="openAddProduct()">➕ Добавить товар</button>';
 
-            // Метро - с цветными названиями веток
             html += '<div class="section-title">🚇 Станции метро</div>';
             metroData.forEach(line => {
                 html += `<p class="metro-line-header" style="color:${line.color};">● ${line.line}</p>`;
                 line.stations.forEach(s => html += `<div class="option-card" style="justify-content:space-between;padding:8px 10px;"><span style="font-size:13px;">🚇 ${s.name}</span><div class="toggle${s.av!==false?' on':''}" onclick="tgMetro('${s.name}')"></div></div>`);
             });
 
-            // Время
             html += '<div class="section-title">🕐 Время доставки</div>';
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete" onclick="delTime(${t.id})">✕</button></div></div>`);
             html += '<div class="admin-row" style="margin-top:8px;"><input id="newTime" class="search-input" placeholder="Новый слот (напр: 20:00 – 22:00)" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addTime()">+</button></div>';
@@ -743,7 +779,12 @@
                     }
                 }
                 await apiPost(`/api/${BOT_ID}/products`, {
-                    name, description: desc, price, stock, category_id: catId, images: uploadedImages
+                    name: name,
+                    description: desc,
+                    price: price,
+                    stock: stock,
+                    category_id: catId,
+                    images: uploadedImages
                 });
                 tempImages = [];
                 closeModal();
