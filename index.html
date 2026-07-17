@@ -671,7 +671,7 @@
         }
 
         function pickMetro(station) {
-            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📅 Выберите дату</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station}</p><div class="dates-grid">`;
+            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📅 Выберите дату доставки</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station}</p><div class="dates-grid">`;
             availableDates.forEach(d => {
                 html += `<div class="date-chip" onclick="pickDate('${station}','${d.date}')"><div class="date-day">${d.day}</div><div class="date-wd">${d.weekday}</div></div>`;
             });
@@ -744,19 +744,6 @@
                         items: orderData.items
                     }));
                 }
-                
-                setTimeout(() => {
-                    if (tg.sendData) {
-                        tg.sendData(JSON.stringify({
-                            action: 'new_order',
-                            order_id: orderId,
-                            total: total,
-                            metro: metro,
-                            time: time,
-                            date: dateStr
-                        }));
-                    }
-                }, 500);
             } else {
                 showToast('Ошибка оформления');
             }
@@ -792,8 +779,9 @@
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete" onclick="delTime(${t.id})">✕</button></div></div>`);
             html += '<div class="admin-row" style="margin-top:8px;"><input id="newTime" class="search-input" placeholder="Новый слот (напр: 20:00 – 22:00)" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addTime()">+</button></div>';
 
-            html += '<div class="section-title">📅 Диапазон дат</div>';
-            html += '<div class="admin-row"><input id="dateStart" type="date" class="search-input"><input id="dateEnd" type="date" class="search-input"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="updateDates()">💾</button></div>';
+            html += '<div class="section-title">📅 Доступные даты для заказа</div>';
+            html += '<p style="font-size:11px;color:var(--text2);margin-bottom:8px;">Даты, которые видят пользователи при оформлении (отображается максимум 7 дней вперёд от выбранной даты начала)</p>';
+            html += '<div class="admin-row"><input id="dateStart" type="date" class="search-input" placeholder="С какой даты"><input id="dateEnd" type="date" class="search-input" placeholder="По какую дату"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="updateDates()">💾 Сохранить</button></div>';
 
             area.innerHTML = html;
         }
