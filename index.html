@@ -78,6 +78,11 @@
             box-shadow:0 2px 8px rgba(0,0,0,0.3);
         }
         .icon-btn:active { transform:scale(0.9); background:var(--card2); }
+        .icon-btn.active-tab { 
+            background:linear-gradient(135deg, var(--accent), var(--accent2)); 
+            border-color:transparent; 
+            box-shadow:0 4px 12px rgba(124,58,237,0.4); 
+        }
         .badge {
             position:absolute; top:-5px; right:-5px; background:linear-gradient(135deg, var(--accent), var(--accent2));
             color:white; min-width:18px; height:18px; border-radius:9px; font-size:10px; font-weight:700;
@@ -250,6 +255,38 @@
         .admin-row input, .admin-row select { flex:1; }
         .metro-line-header { font-weight:700; margin:10px 0 4px; font-size:13px; }
         .refresh-btn { margin-top:8px; font-size:11px; color:var(--accent2); cursor:pointer; text-align:center; }
+        
+        .dates-grid {
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:6px;
+            margin-bottom:8px;
+        }
+        .date-chip {
+            padding:10px 6px;
+            border-radius:10px;
+            background:var(--card);
+            border:1px solid var(--border);
+            text-align:center;
+            cursor:pointer;
+            transition:all 0.2s;
+            font-size:11px;
+            color:var(--text2);
+        }
+        .date-chip.active {
+            background:linear-gradient(135deg, var(--accent), var(--accent2));
+            border-color:transparent;
+            color:white;
+            font-weight:600;
+        }
+        .date-chip .date-day {
+            font-size:16px;
+            font-weight:700;
+        }
+        .date-chip .date-wd {
+            font-size:10px;
+            opacity:0.8;
+        }
     </style>
 </head>
 <body>
@@ -258,13 +295,13 @@
             <div class="header-bg"></div>
             <div class="header">
                 <div class="logo" onclick="goToCatalog()">Helgirll Test</div>
-                <div class="header-actions">
-                    <div class="icon-btn" onclick="navigateTo('catalog')" title="Каталог">🛍️</div>
-                    <div class="icon-btn" onclick="navigateTo('cart')" title="Корзина">
+                <div class="header-actions" id="headerActions">
+                    <div class="icon-btn" data-view="catalog" onclick="navigateTo('catalog')" title="Каталог">🛍️</div>
+                    <div class="icon-btn" data-view="cart" onclick="navigateTo('cart')" title="Корзина">
                         🛒<span class="badge" id="cartBadge">0</span>
                     </div>
-                    <div class="icon-btn" onclick="navigateTo('profile')" title="Профиль">👤</div>
-                    <div class="icon-btn" id="adminBtn" style="display:none" onclick="navigateTo('admin')" title="Админ">⚙️</div>
+                    <div class="icon-btn" data-view="profile" onclick="navigateTo('profile')" title="Профиль">👤</div>
+                    <div class="icon-btn" data-view="admin" id="adminBtn" style="display:none" onclick="navigateTo('admin')" title="Админ">⚙️</div>
                 </div>
             </div>
         </div>
@@ -299,6 +336,7 @@
         let tempImages = [];
         let metroData = [];
         let timeSlots = [];
+        let availableDates = [];
 
         async function apiGet(path) {
             try {
@@ -346,25 +384,25 @@
 
         async function loadData() {
             try {
-                const [p, c, m, t] = await Promise.all([
+                const [p, c, m, t, d] = await Promise.all([
                     apiGet(`/api/${BOT_ID}/products`),
                     apiGet(`/api/${BOT_ID}/categories`),
                     apiGet(`/api/${BOT_ID}/metro`),
-                    apiGet(`/api/${BOT_ID}/timeslots`)
+                    apiGet(`/api/${BOT_ID}/timeslots`),
+                    apiGet(`/api/${BOT_ID}/dates`)
                 ]);
                 products = p || [];
                 categories = c || [];
                 metroData = m || [];
                 timeSlots = t || [];
+                availableDates = d || [];
                 
-                // Загружаем заказы из API для текущего пользователя
                 const userId = user.id || 0;
                 if (userId > 0) {
                     const userOrders = await apiGet(`/api/${BOT_ID}/orders?user_id=${userId}`);
                     orders = userOrders || [];
                 }
                 
-                // Корзину оставляем из localStorage
                 const saved = localStorage.getItem('hg_cart');
                 if (saved) {
                     cart = JSON.parse(saved);
@@ -398,6 +436,15 @@
 
         function switchView(view) {
             currentView = view;
+            
+            document.querySelectorAll('#headerActions .icon-btn').forEach(function(btn) {
+                btn.classList.remove('active-tab');
+            });
+            var activeBtn = document.querySelector('#headerActions .icon-btn[data-view="' + view + '"]');
+            if (activeBtn) {
+                activeBtn.classList.add('active-tab');
+            }
+            
             if (view === 'profile') {
                 loadProfileData();
             } else {
@@ -600,7 +647,7 @@
                     html += `<div class="option-card" style="flex-direction:column;align-items:flex-start;">
                         <div style="display:flex;justify-content:space-between;width:100%;"><b>#${o.id.toString().slice(-6)}</b><span>${sm[o.status]||o.status}</span></div>
                         <p style="font-size:11px;color:var(--text2);">${its}</p>
-                        <p style="font-size:11px;">💰 ${(o.total||0).toLocaleString('ru-RU')} ₽ | 📍 ${o.metro||'—'}</p>
+                        <p style="font-size:11px;">💰 ${(o.total||0).toLocaleString('ru-RU')} ₽ | 📍 ${o.metro||'—'} | 📅 ${o.date||'—'}</p>
                     </div>`;
                 });
             }
@@ -624,28 +671,45 @@
         }
 
         function pickMetro(station) {
-            const slots = timeSlots.filter(t=>t.av!==false);
-            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">🕐 Время</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station}</p>`;
-            slots.forEach(t => html += `<div class="option-card" onclick="pickTime('${station}','${t.range}')"><span>🕐 ${t.range}</span><span style="color:#a855f7;">→</span></div>`);
-            html += '<button class="btn-secondary" onclick="openModal(metroModal())">← Назад</button>';
+            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📅 Выберите дату</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station}</p><div class="dates-grid">`;
+            availableDates.forEach(d => {
+                html += `<div class="date-chip" onclick="pickDate('${station}','${d.date}')"><div class="date-day">${d.day}</div><div class="date-wd">${d.weekday}</div></div>`;
+            });
+            html += '</div><button class="btn-secondary" onclick="openModal(metroModal())">← Назад</button>';
             openModal(html);
         }
 
-        function pickTime(metro,time) {
+        function pickDate(station, dateStr) {
+            const slots = timeSlots.filter(t=>t.av!==false);
+            const d = new Date(dateStr);
+            const day = d.getDate().toString().padStart(2,'0');
+            const month = (d.getMonth()+1).toString().padStart(2,'0');
+            const formatted = `${day}.${month}`;
+            let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">🕐 Время</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station} | 📅 ${formatted}</p>`;
+            slots.forEach(t => html += `<div class="option-card" onclick="pickTime('${station}','${t.range}','${dateStr}')"><span>🕐 ${t.range}</span><span style="color:#a855f7;">→</span></div>`);
+            html += `<button class="btn-secondary" onclick="pickMetro('${station}')">← Назад</button>`;
+            openModal(html);
+        }
+
+        function pickTime(metro,time,dateStr) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+            const d = new Date(dateStr);
+            const day = d.getDate().toString().padStart(2,'0');
+            const month = (d.getMonth()+1).toString().padStart(2,'0');
+            const formatted = `${day}.${month}`;
             const items = cart.map(i=>`<div style="display:flex;justify-content:space-between;font-size:12px;"><span>${i.name} x${i.qty}</span><span>${((i.price||0)*i.qty).toLocaleString('ru-RU')} ₽</span></div>`).join('');
             openModal(`
                 <div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button>
                 <div class="modal-title">✅ Подтверждение</div>
-                <div class="confirm-box"><p>📍 <b>${metro}</b></p><p>🕐 <b>${time}</b></p><p>📦 ${cart.reduce((s,i)=>s+i.qty,0)} шт.</p>
+                <div class="confirm-box"><p>📍 <b>${metro}</b></p><p>📅 <b>${formatted}</b></p><p>🕐 <b>${time}</b></p><p>📦 ${cart.reduce((s,i)=>s+i.qty,0)} шт.</p>
                 <div style="border-top:1px solid #2a2a35;padding-top:8px;margin-top:6px;">${items}</div>
                 <p style="font-size:16px;font-weight:700;color:#a855f7;margin-top:6px;">💰 ${total.toLocaleString('ru-RU')} ₽</p></div>
-                <button class="btn-primary" onclick="sendOrder('${metro}','${time}')">✅ Подтвердить</button>
-                <button class="btn-secondary" onclick="pickMetro('${metro}')">← Назад</button>
+                <button class="btn-primary" onclick="sendOrder('${metro}','${time}','${dateStr}')">✅ Подтвердить</button>
+                <button class="btn-secondary" onclick="pickDate('${metro}','${dateStr}')">← Назад</button>
             `);
         }
 
-        async function sendOrder(metro,time) {
+        async function sendOrder(metro,time,dateStr) {
             const total = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
             const orderData = {
                 user_id: user.id || 0,
@@ -654,18 +718,45 @@
                 firstname: user.first_name || '',
                 metro: metro,
                 time: time,
+                date: dateStr,
                 total: total,
                 items: cart.map(i => ({id: i.id, name: i.name, price: i.price, qty: i.qty}))
             };
             
             const result = await apiPost(`/api/${BOT_ID}/orders`, orderData);
             if (result) {
+                const orderId = result.order_id;
                 cart = [];
                 saveCart();
                 closeModal();
                 showToast('Заказ оформлен!');
                 await loadData();
                 renderContent();
+                
+                if (tg.sendData) {
+                    tg.sendData(JSON.stringify({
+                        action: 'new_order',
+                        order_id: orderId,
+                        total: total,
+                        metro: metro,
+                        time: time,
+                        date: dateStr,
+                        items: orderData.items
+                    }));
+                }
+                
+                setTimeout(() => {
+                    if (tg.sendData) {
+                        tg.sendData(JSON.stringify({
+                            action: 'new_order',
+                            order_id: orderId,
+                            total: total,
+                            metro: metro,
+                            time: time,
+                            date: dateStr
+                        }));
+                    }
+                }, 500);
             } else {
                 showToast('Ошибка оформления');
             }
@@ -700,6 +791,9 @@
             html += '<div class="section-title">🕐 Время доставки</div>';
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete" onclick="delTime(${t.id})">✕</button></div></div>`);
             html += '<div class="admin-row" style="margin-top:8px;"><input id="newTime" class="search-input" placeholder="Новый слот (напр: 20:00 – 22:00)" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addTime()">+</button></div>';
+
+            html += '<div class="section-title">📅 Диапазон дат</div>';
+            html += '<div class="admin-row"><input id="dateStart" type="date" class="search-input"><input id="dateEnd" type="date" class="search-input"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="updateDates()">💾</button></div>';
 
             area.innerHTML = html;
         }
@@ -827,6 +921,21 @@
             }
         }
 
+        async function updateDates() {
+            const start = document.getElementById('dateStart')?.value;
+            const end = document.getElementById('dateEnd')?.value;
+            if (start && end) {
+                await fetch(`${API_URL}/api/${BOT_ID}/dates`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({start_date: start, end_date: end})
+                });
+                await loadData();
+                renderContent();
+                showToast('Даты обновлены');
+            }
+        }
+
         function openModal(html) { 
             document.getElementById('modalBox').innerHTML = html; 
             document.getElementById('modalOverlay').style.display = 'flex'; 
@@ -841,7 +950,7 @@
         async function init() {
             await loadData();
             checkAdmin();
-            renderContent();
+            switchView('catalog');
         }
         init();
     </script>
