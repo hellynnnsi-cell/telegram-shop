@@ -672,9 +672,13 @@
 
         function pickMetro(station) {
             let html = `<div class="modal-handle"></div><button class="modal-close" onclick="closeModal()">✕</button><div class="modal-title">📅 Выберите дату доставки</div><p style="color:#a1a1aa;margin-bottom:8px;">📍 ${station}</p><div class="dates-grid">`;
-            availableDates.forEach(d => {
-                html += `<div class="date-chip" onclick="pickDate('${station}','${d.date}')"><div class="date-day">${d.day}</div><div class="date-wd">${d.weekday}</div></div>`;
-            });
+            if (availableDates.length === 0) {
+                html += '<p style="color:var(--text2);grid-column:1/-1;text-align:center;">Нет доступных дат</p>';
+            } else {
+                availableDates.forEach(d => {
+                    html += `<div class="date-chip" onclick="pickDate('${station}','${d.date}')"><div class="date-day">${d.day}</div><div class="date-wd">${d.weekday}</div></div>`;
+                });
+            }
             html += '</div><button class="btn-secondary" onclick="openModal(metroModal())">← Назад</button>';
             openModal(html);
         }
@@ -779,9 +783,9 @@
             timeSlots.forEach(t => html += `<div class="option-card" style="justify-content:space-between;"><span style="font-size:13px;">🕐 ${t.range}</span><div style="display:flex;align-items:center;gap:8px;"><div class="toggle${t.av!==false?' on':''}" onclick="tgTime(${t.id})"></div><button class="btn-delete" onclick="delTime(${t.id})">✕</button></div></div>`);
             html += '<div class="admin-row" style="margin-top:8px;"><input id="newTime" class="search-input" placeholder="Новый слот (напр: 20:00 – 22:00)" style="flex:1;"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="addTime()">+</button></div>';
 
-            html += '<div class="section-title">📅 Доступные даты для заказа</div>';
-            html += '<p style="font-size:11px;color:var(--text2);margin-bottom:8px;">Даты, которые видят пользователи при оформлении (отображается максимум 7 дней вперёд от выбранной даты начала)</p>';
-            html += '<div class="admin-row"><input id="dateStart" type="date" class="search-input" placeholder="С какой даты"><input id="dateEnd" type="date" class="search-input" placeholder="По какую дату"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="updateDates()">💾 Сохранить</button></div>';
+            html += '<div class="section-title">📅 На сколько дней вперёд можно заказать</div>';
+            html += '<p style="font-size:11px;color:var(--text2);margin-bottom:8px;">Выберите на сколько дней вперёд от сегодняшней даты пользователи могут оформлять доставку (0 = только сегодня, 1 = сегодня и завтра, 7 = вся неделя)</p>';
+            html += '<div class="admin-row"><input id="daysForward" type="number" class="search-input" placeholder="Количество дней (0-30)" min="0" max="30" value="7"><button class="btn-primary" style="width:auto;padding:8px 14px;margin-top:0;" onclick="updateDays()">💾 Сохранить</button></div>';
 
             area.innerHTML = html;
         }
@@ -909,18 +913,24 @@
             }
         }
 
-        async function updateDates() {
-            const start = document.getElementById('dateStart')?.value;
-            const end = document.getElementById('dateEnd')?.value;
-            if (start && end) {
+        async function updateDays() {
+            const days = document.getElementById('daysForward')?.value;
+            if (days !== '' && days !== null) {
+                const today = new Date();
+                const endDate = new Date(today);
+                endDate.setDate(today.getDate() + parseInt(days));
+                
+                const startStr = today.toISOString().split('T')[0];
+                const endStr = endDate.toISOString().split('T')[0];
+                
                 await fetch(`${API_URL}/api/${BOT_ID}/dates`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({start_date: start, end_date: end})
+                    body: JSON.stringify({start_date: startStr, end_date: endStr})
                 });
                 await loadData();
                 renderContent();
-                showToast('Даты обновлены');
+                showToast('Даты обновлены! Доступно ' + (parseInt(days)+1) + ' дней');
             }
         }
 
